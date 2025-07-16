@@ -96,35 +96,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\arm64-v8a\libprootwrapper.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\arm64-v8a\libproot.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\arm64-v8a\libloader.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\arm64-v8a\libloader32.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-
-
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\x86_64\libprootwrapper.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\x86_64\libloader.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\x86_64\libloader32.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\x86_64\libproot.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Components\Pages\BuySell.razor.cs" />
   </ItemGroup>
 
@@ -146,6 +117,8 @@
 
   <ItemGroup>
     <Folder Include="Platforms\Android\Assets\" />
+    <Folder Include="Platforms\Android\JniLibs\arm64-v8a\" />
+    <Folder Include="Platforms\Android\JniLibs\x86_64\" />
     <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
 
