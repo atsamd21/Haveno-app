@@ -12,6 +12,9 @@ public partial class MyOffers : ComponentBase
     public NavigationManager NavigationManager { get; set; } = default!;
     public List<OfferInfo> Offers { get; set; } = [];
 
+    public OfferInfo? OfferInfo { get; set; }
+    public bool ShowExtraInfoModal { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         while (true)
