@@ -195,27 +195,18 @@ public class BackendService : Service
 
             Proot.AppHome = daemonPath;
 
-            // Don't need to set a new password whenever starting daemon
-            //using var streamReader = Proot.RunProotUbuntuCommand("java", _daemonCts.Token, "-Xmx4G", "-jar", $"{Path.Combine(daemonPath, "daemon.jar")}", "--xmrNode=http://136.143.204.122:18089", "--walletRpcBindPort=4000", "--logLevel=INFO", "--maxMemory=2048", "--disableRateLimits=true", "--baseCurrencyNetwork=XMR_MAINNET", "--ignoreLocalXmrNode=true", "--useDevPrivilegeKeys=false", "--nodePort=9999", "--appName=haveno-reto", $"--apiPassword={password}", "--apiPort=3201", "--passwordRequired=false", "--useNativeXmrWallet=false", "--torControlHost=127.0.0.1", "--torControlPort=9061");
+            string xmrNode;
 
-            // Does not work either
-            //var hostEntry = Dns.GetHostEntry("xmr-node.cakewallet.com");
-
-            //IPAddress? ip = null;
-            //if (hostEntry.AddressList.Length > 0)
-            //{
-            //    ip = hostEntry.AddressList[0];
-            //}
-
-            //var xmrNode = AppConstants.Network == "XMR_MAINNET" ? $"--xmrNode=http://{ip}:18081" : "";
-
-            //172.104.233.248
-            //172.233.40.189
-
-            // For testing, using monero node found on monero.fail
-            //var xmrNode = AppConstants.Network == "XMR_MAINNET" ? "--xmrNode=http://104.168.82.96:18081" : "--xmrNode=http://45.63.8.26:38081";
-            //var xmrNode = AppConstants.Network == "XMR_MAINNET" ? "--xmrNode=http://172.104.233.248:18081" : "--xmrNode=http://45.63.8.26:38081";
-            var xmrNode = AppConstants.Network == "XMR_MAINNET" ? "--xmrNode=http://38.105.209.54:18089" : "--xmrNode=http://45.63.8.26:38081";
+            if (Helpers.Preferences.Get<bool>(Helpers.Preferences.UseCustomXmrNode))
+            {
+                xmrNode = string.Empty;
+            }
+            else
+            {
+                //xmrNode = AppConstants.Network == "XMR_MAINNET" ? "--xmrNode=http://38.105.209.54:18089" : "--xmrNode=http://45.63.8.26:38081";
+                // 95.217.143.178 = rucknium.me
+                xmrNode = AppConstants.Network == "XMR_MAINNET" ? "--xmrNode=http://95.217.143.178:18081" : "--xmrNode=http://45.63.8.26:38081";
+            }
 
 #if DEBUG
             var logLevel = "--logLevel=INFO";

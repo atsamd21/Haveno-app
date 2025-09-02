@@ -78,7 +78,7 @@ public partial class Settings : ComponentBase, IDisposable
         get; 
         set 
         { 
-            field = value?.Trim();
+            field = value?.Trim().ToLower();
 
             if (field is null)
                 return;
@@ -103,7 +103,7 @@ public partial class Settings : ComponentBase, IDisposable
                 IsMoneroNodeUrlInvalidReason = null;
                 return;
             }
-
+            
             var protocol = field.Split("http://");
             if (protocol.Length < 2)
             {
@@ -125,7 +125,7 @@ public partial class Settings : ComponentBase, IDisposable
             if (!IPAddress.TryParse(addressAndPort[0], out _))
             {
                 //IsMoneroNodeUrlInvalidReason = "Please use an IP address or onion address and not a hostname.";
-                IsMoneroNodeUrlInvalidReason = "Please use an IP address and not a hostname.";
+                IsMoneroNodeUrlInvalidReason = "Please use an IP address and not a domain name.";
                 return;
             }
 
@@ -246,6 +246,8 @@ public partial class Settings : ComponentBase, IDisposable
 
         var response = await HavenoXmrNodeService.GetMoneroNodeAsync();
         ConnectedMoneroNodeUrl = response.Url;
+
+        Helpers.Preferences.Set(Helpers.Preferences.UseCustomXmrNode, true);
 
         ShowConnectToMoneroNodeModal = false;
         MoneroNodeUrl = string.Empty;

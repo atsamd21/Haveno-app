@@ -20,11 +20,24 @@
         </div>
     </div>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+    <div class="index-error-modal-wrapper" id="blazor-error-ui">
+        <div class="index-error-modal">
+            <div class="top-icons">
+                <img src="icons/info.svg" class="info" />
+                <p class="verify-title">Error</p>
+                <a class="dismiss close">
+                    <i class="bi-x-lg"></i>
+                </a>
+            </div>
+
+            <p>An unhandled error has occurred.</p> 
+            <br />
+            <p>You may need to restart the application if reloading does not work.</p>
+
+            <a href="" class="reload button-green">Reload</a>
+        </div>
     </div>
+
     <script src="js/script.js"></script>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="/ionicons/ionicons.esm.js" type="module"></script>

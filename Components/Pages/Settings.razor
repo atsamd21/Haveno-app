@@ -52,6 +52,7 @@
         <p class="bold-p">Monero node</p>
         @if (DaemonInstallOption == DaemonInstallOptions.RemoteNode)
         {
+            // TODO if standalone AND using custom monerod - also show this
             <p>Status: @(XMRNodeIsRunning ? "Running" : "Stopped")</p>
         }
         <p class="url">Url: @(string.IsNullOrEmpty(ConnectedMoneroNodeUrl) ? "Loading..." : ConnectedMoneroNodeUrl)</p>
