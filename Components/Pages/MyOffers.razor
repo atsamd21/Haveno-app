@@ -1,8 +1,25 @@
 ﻿@page "/buysell/myoffers"
 
+<Modal Title="Offer info"
+       @bind-IsOpen="ShowExtraInfoModal"
+       ModalButtonOptions="ModalButtonOptions.CANCEL"
+       CancelButtonText="Close">
+    <div style="max-height: 60vh;overflow-y: auto;">
+
+        @if (!string.IsNullOrEmpty(OfferInfo?.Challenge))
+        {
+            <p>Passphrase</p>
+            <div class="extra-info">
+                <p class="regular-p-grey">@OfferInfo?.Challenge</p>
+                <img class="copy-icon" @onclick="@(async () => await Clipboard.Default.SetTextAsync(OfferInfo?.Challenge))" src="icons/copy.svg" />
+            </div>            
+        }
+    </div>
+</Modal>
+
 <div class="my-offers-main">
     <div class="tab-container">
-        <Tabs TabNames="@(["All", "Active", "Inactive"])"></Tabs>
+        <Tabs TabNames="@(["All", "Active", "Inactive"])" DisabledTabNames="@(["Active", "Inactive"])"></Tabs>
     </div>
 
     @if (Offers.Count == 0)
@@ -15,6 +32,7 @@
             @foreach (var offer in Offers)
             {
                 <li class="offer">
+                    <img src="icons/info.svg" class="info" @onclick="() => { OfferInfo = offer; ShowExtraInfoModal = true; }" />
                     <div class="offer-top">
                         <div class="offer-top-left">
                             @if (offer.BaseCurrencyCode == "XMR")

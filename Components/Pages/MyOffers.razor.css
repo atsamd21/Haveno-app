@@ -39,9 +39,6 @@
   display: flex;
   /*margin-bottom: 10px;*/
 }
-.offers .offer .offer-top .offer-top-left img {
-  margin: 0 6px 0;
-}
 .offers .offer .offer-top .offer-top-left .counter-amounts {
   display: flex;
   align-items: center;
@@ -78,4 +75,27 @@
 }
 .buttons button:first-child {
   margin-right: 6px;
+}
+
+.extra-info {
+  position: relative;
+}
+.extra-info p {
+  border: 1px solid #666666;
+  border-radius: 10px;
+  padding: 10px;
+}
+.extra-info .copy-icon {
+  height: 16px;
+  min-height: 16px;
+  width: 16px;
+  min-width: 16px;
+  filter: invert(1);
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}
+
+.info {
+  filter: invert(1) !important;
 }
