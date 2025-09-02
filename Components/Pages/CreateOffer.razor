@@ -1,7 +1,7 @@
 ﻿<div class="create-offer-main">
     <p class="bold-p margin">Create offer</p>
 
-    <Modal Title="Creating offer" ModalButtonOptions="ModalButtonOptions.NONE" @bind-IsOpen="IsFetching">
+    <Modal Title="Creating offer" IsCloseable="false" ModalButtonOptions="ModalButtonOptions.NONE" @bind-IsOpen="IsFetching">
         <p class="regular-p-grey">Please wait</p>
     </Modal>
     <Modal Title="Review offer" ModalButtonOptions="ModalButtonOptions.OK_CANCEL" @bind-IsOpen="IsConfirmModalOpen" OnOkPressed="PostOfferAsync" OkButtonText="Post offer">
