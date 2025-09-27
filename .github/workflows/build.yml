@@ -1,0 +1,38 @@
+name: Build MAUI App
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  DOTNET_VERSION: 9.0.x
+  DOTNET_VERSION_TARGETS: net9.0
+  CSPROJ_TO_BUILD: Manta.csproj
+  PROJECT_FOLDER: .
+
+jobs:
+  vars:
+    runs-on: ubuntu-latest
+    outputs:      
+      dotnetVersion: ${{ env.DOTNET_VERSION }}
+      dotnetVersionTargets: ${{ env.DOTNET_VERSION_TARGETS }}
+      csprojToBuild: ${{ env.CSPROJ_TO_BUILD }}
+      projectFolder: ${{ env.PROJECT_FOLDER }}
+    steps:
+      - run: echo "Env vars"
+  
+  build-android:
+    needs: vars
+    uses: ./.github/workflows/build-android.yml
+    with:
+      dotnet-version: ${{ needs.vars.outputs.dotnetVersion }}
+      dotnet-version-target: ${{ needs.vars.outputs.dotnetVersionTargets }}
+      project-file: ${{ needs.vars.outputs.csprojToBuild }}
+      project-folder: ${{ needs.vars.outputs.projectFolder }}
+      build-config: 'Release'
+    secrets:
+      keystore: ${{ secrets.KEYSTORE }}
+      keystore-alias: ${{ secrets.KEYSTORE_ALIAS }}
+      keystore-password: ${{ secrets.KEYSTORE_PASS }}

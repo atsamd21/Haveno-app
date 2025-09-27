@@ -1,0 +1,58 @@
+name: Android Publish
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: true
+        type: string
+      dotnet-version-target:
+        required: true
+        type: string
+      project-file:
+        required: true
+        type: string
+      project-folder:
+        required: true
+        type: string
+      build-config:
+        required: true
+        type: string
+    secrets:
+      keystore-password:
+        required: true
+      keystore-alias:
+        required: true
+      keystore:
+        required: true
+
+jobs:
+  publish-android:
+    runs-on: windows-latest
+    name: Android Publish
+
+    steps:
+      - name: Setup .NET ${{ inputs.dotnet-version }}
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - uses: actions/checkout@v3
+        name: Checkout the code
+
+      - name: Install MAUI Workload
+        run: dotnet workload install maui --ignore-failed-sources
+
+      - name: Restore Dependencies
+        run: dotnet restore ${{ inputs.project-file }}
+
+      - name: Decode Keystore
+        id: decode_keystore
+        uses: timheuer/base64-to-file@v1
+        with:
+          fileDir: '${{ github.workspace }}\${{ inputs.project-folder }}'
+          fileName: 'havenoapp.keystore'
+          encodedString: ${{ secrets.keystore }}
+
+      - name: Publish APK
+        run: dotnet publish ${{inputs.project-file}} -c ${{ inputs.build-config }} -f ${{ inputs.dotnet-version-target }}-android /p:AndroidPackageFormats=apk /p:AndroidKeyStore=true /p:AndroidSigningKeyStore=havenoapp.keystore /p:AndroidSigningKeyAlias=${{secrets.keystore-alias}} /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}" /p:AndroidSigningStorePass="${{ secrets.keystore-password }}" --no-restore
