@@ -207,15 +207,23 @@ public partial class Index : ComponentBase
                         {
                             GrpcChannelSingleton.CreateChannel(host, password, new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new AndroidSocks5Handler())));
 
-                            if (await HavenoDaemonService.IsHavenoDaemonRunningAsync())
+                            for (int i = 0; i < 2; i++)
                             {
-                                NavigationManager.NavigateTo("/Market");
+                                using CancellationTokenSource cancellationTokenSource = new(5_000);
+
+                                try
+                                {
+                                    await HavenoDaemonService.IsHavenoDaemonRunningAsync(cancellationTokenSource.Token);
+                                    NavigationManager.NavigateTo("/Market");
+                                    return;
+                                }
+                                catch (TaskCanceledException)
+                                {
+
+                                }
                             }
-                            else
-                            {
-                                // Send param to open modal?
-                                NavigationManager.NavigateTo("/Settings");
-                            }
+
+                            NavigationManager.NavigateTo("/Settings");
                         }
                     }
                     break;
