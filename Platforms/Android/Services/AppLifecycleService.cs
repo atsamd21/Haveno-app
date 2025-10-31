@@ -64,7 +64,12 @@ public class AppLifecycleService : Java.Lang.Object, Android.App.Application.IAc
                     var serviceProvider = IPlatformApplication.Current?.Services;
                     if (serviceProvider is not null)
                     {
-                        _cancellationTokenSource.Cancel();
+                        // Wrapping in task was not needed before, not sure what changed but throws 'Android.OS.NetworkOnMainThreadException'
+                        // TODO - need to fix this properly!
+                        Task.Run(() =>
+                        {
+                            _cancellationTokenSource.Cancel();
+                        }).Wait();
 
                         var notificationSingleton = serviceProvider.GetRequiredService<NotificationSingleton>();
                         Task.Run(notificationSingleton.StopNotificationListenerAsync).GetAwaiter().GetResult();

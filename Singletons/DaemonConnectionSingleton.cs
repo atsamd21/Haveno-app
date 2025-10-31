@@ -52,8 +52,7 @@ public class DaemonConnectionSingleton
                             { 
                                 Destinations = [
                                     new XmrDestination {
-                                        // TODO get network type and get corresponding address
-                                        Address = true ? "53piHrKPV5Yj2KYv3CMiLxepGixrtSw3iWNwuBth9bVSHcxE1y2uXhZJRi4aehDaT3L2PC1W1qWrQD1Mfzu8UMxoDoR8bad" : "888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H",
+                                        Address = AppConstants.Network == "XMR_MAINNET" ? "888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H" : AppConstants.Network == "XMR_STAGENET" ? "53piHrKPV5Yj2KYv3CMiLxepGixrtSw3iWNwuBth9bVSHcxE1y2uXhZJRi4aehDaT3L2PC1W1qWrQD1Mfzu8UMxoDoR8bad" : "9tsUiG9bwcU7oTbAdBwBk2PzxFtysge5qcEsHEpetmEKgerHQa1fDqH7a4FiquZmms7yM22jdifVAD7jAb2e63GSJMuhY75",
                                         Amount = "1"
                                     }
                                 ]
