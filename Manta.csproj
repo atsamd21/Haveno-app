@@ -164,13 +164,13 @@
     <PackageReference Include="Grpc.Net.Client.Web" Version="2.71.0" />
     <PackageReference Include="HavenoSharp" Version="1.1.3" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="9.8.0" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.90" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.90" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.90" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.120" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.120" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
     <PackageReference Include="MudBlazor" Version="8.11.0" />
-    <PackageReference Include="ZXing.Net.Maui" Version="0.4.0" />
-    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.4.0" />
+    <PackageReference Include="ZXing.Net.Maui" Version="0.6.0" />
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>
