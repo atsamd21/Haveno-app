@@ -15,6 +15,7 @@ public static class Preferences
     public const string IsToggled = "is-toggled";
     public const string OfferPaymentType = "offer-payment-type";
     public const string CustomXmrNode = "custom-xmr-node";
+    public const string InitialNoticeAcknowledged = "initial-notice-acknowledged";
 
 #if ANDROID
     public static void Set<T>(string key, T? data)

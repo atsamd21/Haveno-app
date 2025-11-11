@@ -67,6 +67,8 @@ public partial class Market : ComponentBase, IDisposable
     public int CurrentPage { get; set; }
     public int PageCount { get; set; }
 
+    public bool ShowNotice { get; set; }
+
     [Inject]
     public ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject]
@@ -124,6 +126,8 @@ public partial class Market : ComponentBase, IDisposable
 
                 PreferredCurrency = await LocalStorage.GetItemAsStringAsync("preferredCurrency") ?? CurrencyCultureInfo.FallbackCurrency;
 
+                ShowNotice = !Helpers.Preferences.Get<bool>(Helpers.Preferences.InitialNoticeAcknowledged);
+
                 try
                 {
                     CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
@@ -155,6 +159,11 @@ public partial class Market : ComponentBase, IDisposable
         TradeStatisticsSingleton.OnTradeStatisticsFetch += HandleTradeStatisticsFetch;
 
         await base.OnInitializedAsync();
+    }
+
+    private void AcknowledgeNotice()
+    {
+        Helpers.Preferences.Set(Helpers.Preferences.InitialNoticeAcknowledged, true);
     }
 
     private async void HandleBalanceFetch(bool isFetching)

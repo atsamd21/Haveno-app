@@ -1,5 +1,12 @@
 ﻿@page "/Market"
 
+<Modal Title="Notice" @bind-IsOpen="ShowNotice" OkButtonText="I understand" OnOkPressed="AcknowledgeNotice" ModalButtonOptions="ModalButtonOptions.OK">
+    It is important that you do not force stop the app whilst confirming payment receipt or sent. In rare cases you may be required to use a desktop computer to recover the trade.
+    <br />
+    <br />
+    Sometimes updating trades can take a while due to tor so it's best to wait or let it time out and retry.
+</Modal>
+
 <div class="market-main">
     <div class="year-price-container">
         <div class="dropdowns">
