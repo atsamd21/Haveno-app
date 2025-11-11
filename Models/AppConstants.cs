@@ -9,6 +9,8 @@ public static class AppConstants
     public static readonly string HavenoAppName;
 
     public const string ApplicationId = "com.haveno";
+    public const double MakerFeePct = 0.0015;
+    public const double TakerFeePct = 0.0075;
 
     static AppConstants()
     {

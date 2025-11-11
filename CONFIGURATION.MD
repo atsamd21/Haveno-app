@@ -21,7 +21,9 @@
 
 ![alt text](https://github.com/atsamd21/Haveno-app/blob/master/AppImages/CHANGETHESE1.png "Change these 1")
 
-3. Open the AppConstants.cs file in a text editor and change the ApplicationId string so that it matches the one in Manta.csproj
+3. Open the AppConstants.cs file in a text editor and change the ApplicationId string so that it matches the one in Manta.csproj.
+
+   You will also need to change MakerFeePct and TakerFeePct fields so that they match the maker and taker fee percentages in the desktop app.
 
 4. Configure remote Haveno node - https://github.com/atsamd21/Haveno-remote-node
 

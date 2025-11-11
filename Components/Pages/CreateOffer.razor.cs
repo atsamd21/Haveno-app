@@ -2,6 +2,7 @@
 using HavenoSharp.Models.Requests;
 using HavenoSharp.Services;
 using Manta.Helpers;
+using Manta.Models;
 using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
 
@@ -120,13 +121,9 @@ public partial class CreateOffer : ComponentBase, IDisposable
 
             var piconeroAmount = field.ToPiconero();
 
-            // TODO need to get actual percentages! really important!
-            var takerFeePct = 0.0075;
-            var makerFeePct = 0.0015;
-
             if (Direction == "BUY")
             {
-                TradeFee = (ulong)(piconeroAmount * makerFeePct);
+                TradeFee = (ulong)(piconeroAmount * AppConstants.MakerFeePct);
                 ulong securityDepositAmount = (ulong)(piconeroAmount * (SecurityDepositPct / 100));
 
                 if (securityDepositAmount < _minSecurityDepositAmount)
@@ -143,7 +140,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
             }
             else
             {
-                var tradeFeePct = BuyerAsTakerWithoutDeposit ? (makerFeePct + takerFeePct) : makerFeePct;
+                var tradeFeePct = BuyerAsTakerWithoutDeposit ? (AppConstants.MakerFeePct + AppConstants.TakerFeePct) : AppConstants.MakerFeePct;
 
                 TradeFee = (ulong)(piconeroAmount * tradeFeePct);
                 ulong depositAmount = (ulong)(piconeroAmount * (SecurityDepositPct / 100));
