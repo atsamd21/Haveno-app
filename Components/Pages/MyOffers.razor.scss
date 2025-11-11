@@ -117,6 +117,17 @@
     }
 }
 
-.info {
-    filter: invert(1) !important;
+
+.info-container {
+    display: flex;
+    margin-bottom: 10px;
+
+    .info {
+        filter: invert(1) !important;
+        margin-right: 6px;
+    }
+
+    p {
+
+    }
 }

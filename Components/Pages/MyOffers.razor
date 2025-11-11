@@ -32,7 +32,13 @@
             @foreach (var offer in Offers)
             {
                 <li class="offer">
-                    <img src="icons/info.svg" class="info" @onclick="() => { OfferInfo = offer; ShowExtraInfoModal = true; }" />
+                    @if (!string.IsNullOrEmpty(offer.Challenge))
+                    {
+                        <div class="info-container" @onclick="() => { OfferInfo = offer; ShowExtraInfoModal = true; }">
+                            <img src="icons/info.svg" class="info" />
+                            <p>Passphrase</p>
+                        </div>
+                    }
                     <div class="offer-top">
                         <div class="offer-top-left">
                             @if (offer.BaseCurrencyCode == "XMR")

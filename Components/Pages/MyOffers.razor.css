@@ -96,6 +96,11 @@
   bottom: 8px;
 }
 
-.info {
+.info-container {
+  display: flex;
+  margin-bottom: 10px;
+}
+.info-container .info {
   filter: invert(1) !important;
+  margin-right: 6px;
 }
