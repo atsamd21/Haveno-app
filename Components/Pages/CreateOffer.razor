@@ -91,7 +91,7 @@
         }
 
         <div class="buttons">
-            <button class="button-green" disabled="@(MoneroAmount < 0.15m || MinimumMoneroAmount < 0.15m || RequiredFunds > AvailableXMRBalance)" @onclick="() => IsConfirmModalOpen = true">Review offer</button>
+            <button class="button-green" disabled="@(MoneroAmount < AppConstants.MinimumTradeAmount || MinimumMoneroAmount < AppConstants.MinimumTradeAmount || RequiredFunds > AvailableXMRBalance)" @onclick="() => IsConfirmModalOpen = true">Review offer</button>
             <button class="button-grey" @onclick="OnCloseCreateOffer">Cancel</button>
         </div>
     }

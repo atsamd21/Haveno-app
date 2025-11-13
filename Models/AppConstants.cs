@@ -11,6 +11,7 @@ public static class AppConstants
     public const string ApplicationId = "com.haveno";
     public const double MakerFeePct = 0.0015;
     public const double TakerFeePct = 0.0075;
+    public const decimal MinimumTradeAmount = 0.05m;
 
     static AppConstants()
     {
