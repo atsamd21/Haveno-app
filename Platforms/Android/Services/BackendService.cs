@@ -205,7 +205,7 @@ public class BackendService : Service
             // ravfx.its-a-node.org = 70.29.255.7
 
             string xmrNode = string.Empty;
-            List<string> xmrNodes = AppConstants.Network == "XMR_MAINNET" ? ["http://192.99.8.110:18089", "http://37.187.74.171:18089", "http://88.99.195.15:18089"] : ["http://3.10.182.182:38081", "http://23.137.57.100:38089", "http://192.99.8.110:38089", "http://37.187.74.171:38089", "http://88.99.195.15:38089"];
+            List<string> xmrNodes = AppConstants.Network == "XMR_MAINNET" ? ["http://192.99.8.110:18089", "http://37.187.74.171:18089", "http://88.99.195.15:18089"] : ["http://23.137.57.100:38089", "http://192.99.8.110:38089", "http://37.187.74.171:38089", "http://88.99.195.15:38089"];
 
             if (!string.IsNullOrEmpty(Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)))
             {
