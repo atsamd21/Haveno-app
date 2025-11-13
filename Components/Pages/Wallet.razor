@@ -100,14 +100,14 @@
                             {
                                 <img src="icons/arrow-right.svg" class="in" />
                                 <p class="transaction-amount">
-                                    XMR @transaction.IncomingTransfers.Aggregate(ulong.MinValue, (x, y) => x + ulong.Parse(y.Amount, CultureInfo.InvariantCulture)).ToMonero().ToString("0.000")
+                                    XMR @transaction.IncomingTransfers.Aggregate(ulong.MinValue, (x, y) => x + ulong.Parse(y.Amount, CultureInfo.InvariantCulture)).ToMonero().ToString("0.0000")
                                 </p>
                             }
                             else
                             {
                                 <img src="icons/arrow-right.svg" class="out" />
                                 <p class="transaction-amount">
-                                    XMR @ulong.Parse(transaction.OutgoingTransfer.Amount, CultureInfo.InvariantCulture).ToMonero().ToString("0.000")
+                                    XMR @ulong.Parse(transaction.OutgoingTransfer.Amount, CultureInfo.InvariantCulture).ToMonero().ToString("0.0000")
                                 </p>
                             }
                             <p>
