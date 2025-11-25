@@ -218,8 +218,22 @@ public static class Proot
         if (process is null || process.InputStream is null)
             throw new Exception("process is null or process.InputStream is null");
 
-        cancellationToken.Register(process.Dispose);
+        var streamReader = new StreamReader(process.InputStream);
 
-        return new StreamReader(process.InputStream);
+        cancellationToken.Register(() =>
+        {
+            var pidField = process.Class.GetDeclaredField("pid");
+            pidField.Accessible = true;
+            int pid = pidField.GetInt(process);
+
+            Android.OS.Process.SendSignal(pid, Android.OS.Signal.Quit);
+
+            process.WaitFor();
+            process.Dispose();
+
+            streamReader.Close();
+        });
+
+        return streamReader;
     }
 }

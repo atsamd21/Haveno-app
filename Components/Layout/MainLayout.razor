@@ -5,9 +5,29 @@
 <div class="page">
     @if (IsIndex)
     {
-        <main>
-            @Body
-        </main>
+        <ErrorBoundary>
+            <ChildContent>
+                <main>
+                    @Body
+                </main>
+            </ChildContent>
+            <ErrorContent>
+                <div class="index-error-modal-wrapper" style="display:block;">
+                    <div class="index-error-modal">
+                        <div class="top-icons">
+                            <img src="icons/info.svg" class="info" />
+                            <p class="verify-title">Error</p>
+                        </div>
+
+                        <p>An unhandled error has occurred.</p>
+                        <br />
+                        <p>@context.Message</p>
+
+                        <a href="" onclick="location.reload()" class="reload button-green">Reload</a>
+                    </div>
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
     }
     else
     {

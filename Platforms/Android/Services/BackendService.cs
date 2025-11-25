@@ -127,6 +127,15 @@ public class BackendService : Service
         SendBroadcast(intent);
     }
 
+    void UpdateException(Exception exception)
+    {
+        var intent = new Intent($"{AppConstants.ApplicationId}.BACKEND_PROGRESS");
+        intent.PutExtra("exception", exception.Message);
+
+        intent.SetPackage(Android.App.Application.Context.PackageName);
+        SendBroadcast(intent);
+    }
+
     private void StartBackend(string password)
     {
         _torReadyTCS = new();
@@ -138,57 +147,67 @@ public class BackendService : Service
         var havenoDaemonService = serviceProvider.GetRequiredService<IHavenoDaemonService>();
         var daemonPath = havenoDaemonService.GetDaemonPath();
 
-//        // Tor does not always connect successfully, need to timeout and give the user the option to restart
-//        _ = Task.Factory.StartNew(() =>
-//        {
-//            _torCts = new();
-//            using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
+        // Tor does not always connect successfully, need to timeout and give the user the option to restart
+        _ = Task.Factory.StartNew(() =>
+        {
+            _torCts = new();
 
-//            string? line;
-//            while ((line = streamReader.ReadLine()) is not null)
-//            {
-//#if DEBUG
-//                Console.WriteLine(line);
-//#endif
-//                int lastPercentage = 0;
+            try
+            {
+                using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
 
-//                for (int i = 0; i < line.Length; i++)
-//                {
-//                    if (line[i] == '%')
-//                    {
-//                        StringBuilder stringBuilder = new();
-//                        for (int j = i - 1; j > 0; j--)
-//                        {
-//                            if (line[j] > '9' || line[j] < '0')
-//                                break;
+                string? line;
+                while ((line = streamReader.ReadLine()) is not null)
+                {
+#if DEBUG
+                    Console.WriteLine(line);
+#endif
+                    int lastPercentage = 0;
 
-//                            stringBuilder.Append(line[j]);
-//                        }
+                    for (int i = 0; i < line.Length; i++)
+                    {
+                        if (line[i] == '%')
+                        {
+                            StringBuilder stringBuilder = new();
+                            for (int j = i - 1; j > 0; j--)
+                            {
+                                if (line[j] > '9' || line[j] < '0')
+                                    break;
 
-//                        if (stringBuilder.Length > 0)
-//                        {
-//                            var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
+                                stringBuilder.Append(line[j]);
+                            }
 
-//                            if (percentage > lastPercentage)
-//                            {
-//                                lastPercentage = percentage;
+                            if (stringBuilder.Length > 0)
+                            {
+                                var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
 
-//                                UpdateProgress($"Tor bootstrapping: {percentage}%");
+                                if (percentage > lastPercentage)
+                                {
+                                    lastPercentage = percentage;
 
-//                                if (percentage == 100)
-//                                {
-//                                    _torReadyTCS.SetResult();
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }, TaskCreationOptions.LongRunning);
+                                    UpdateProgress($"Tor bootstrapping: {percentage}%");
+
+                                    if (percentage == 100)
+                                    {
+                                        _torReadyTCS.SetResult();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                StopHavenoDaemon();
+                UpdateException(e);
+                throw;
+            }
+        }, TaskCreationOptions.LongRunning);
 
         _ = Task.Factory.StartNew(async () =>
         {
-            //await _torReadyTCS.Task;
+            await _torReadyTCS.Task;
 
             UpdateProgress("Starting daemon");
 
@@ -204,67 +223,86 @@ public class BackendService : Service
             // selsta2.featherwallet.net = 88.198.199.23
             // ravfx.its-a-node.org = 70.29.255.7
 
-            string xmrNode = string.Empty;
-            List<string> xmrNodes = AppConstants.Network == "XMR_MAINNET" ? ["http://192.99.8.110:18089", "http://37.187.74.171:18089", "http://88.99.195.15:18089"] : ["http://23.137.57.100:38089", "http://192.99.8.110:38089", "http://37.187.74.171:38089", "http://88.99.195.15:38089"];
-
-            if (!string.IsNullOrEmpty(Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)))
+            try
             {
-                xmrNode = $"--xmrNode={Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)}";
-            }
-            else
-            {
-                // Really we just need to fix the domain name issue and figure out why even though --xmrNodes is specified it still tries to sync with Haveno's default nodes
-                // Might be due to which node was last successfully synced but either way something is overriding the cli argument
-                using var tcpClient = new TcpClient();
+                string xmrNode = string.Empty;
+                List<string> xmrNodes = AppConstants.Network == "XMR_MAINNET" ? ["http://192.99.8.110:18089", "http://37.187.74.171:18089", "http://88.99.195.15:18089"] : ["http://23.137.57.100:38089", "http://192.99.8.110:38089", "http://37.187.74.171:38089", "http://88.99.195.15:38089"];
 
-                string? node = null;
-                var random = new Random();
-
-                while (xmrNodes.Count > 0)
+                if (!string.IsNullOrEmpty(Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)))
                 {
-                    node = xmrNodes[random.Next(xmrNodes.Count)];
+                    xmrNode = $"--xmrNode={Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)}";
+                }
+                else
+                {
+                    // Really we just need to fix the domain name issue and figure out why even though --xmrNodes is specified it still tries to sync with Haveno's default nodes
+                    // Might be due to which node was last successfully synced but either way something is overriding the cli argument
+                    using var tcpClient = new TcpClient();
 
-                    try
+                    string? node = null;
+                    var random = new Random();
+
+                    while (xmrNodes.Count > 0)
                     {
-                        var split = node.Split(':');
-                        tcpClient.ConnectAsync(split[1].Remove(0, 2), int.Parse(split[2])).Wait(TimeSpan.FromSeconds(2));
+                        node = xmrNodes[random.Next(xmrNodes.Count)];
 
-                        if (!tcpClient.Connected)
+                        try
                         {
-                            throw new Exception();
+                            var split = node.Split(':');
+                            tcpClient.ConnectAsync(split[1].Remove(0, 2), int.Parse(split[2])).Wait(TimeSpan.FromSeconds(2));
+
+                            if (!tcpClient.Connected)
+                            {
+                                throw new Exception();
+                            }
+
+                            xmrNode = $"--xmrNode={node}";
+
+                            break;
                         }
-
-                        xmrNode = $"--xmrNode={node}";
-
-                        break;
-            }
-                    catch (Exception)
-                    {
-                        xmrNodes.Remove(node);
-                        continue;
+                        catch (Exception)
+                        {
+                            xmrNodes.Remove(node);
+                            continue;
+                        }
                     }
                 }
-            }
 
 #if DEBUG
-            var logLevel = "--logLevel=INFO";
+                var logLevel = "--logLevel=INFO";
 #else
             // Have to leave this as INFO for now as we parse the output
             var logLevel = "--logLevel=INFO";
             //var logLevel = "--logLevel=OFF";
 #endif
-            using var streamReader = Proot.RunProotUbuntuCommand("java", _daemonCts.Token, "-Xmx2G", "-jar", $"{Path.Combine(daemonPath, "daemon.jar")}", xmrNode, logLevel, "--maxMemory=1200", "--disableRateLimits=true", $"--baseCurrencyNetwork={AppConstants.Network}", "--ignoreLocalXmrNode=true", "--useDevPrivilegeKeys=false", "--nodePort=9999", $"--appName={AppConstants.HavenoAppName}", $"--apiPassword={password}", "--apiPort=3201", "--passwordRequired=false", "--useNativeXmrWallet=false");
+                using var streamReader = Proot.RunProotUbuntuCommand("java", _daemonCts.Token, "-Xmx2G", "-jar", $"{Path.Combine(daemonPath, "daemon.jar")}", xmrNode, logLevel, "--maxMemory=1200", "--disableRateLimits=true", $"--baseCurrencyNetwork={AppConstants.Network}", "--ignoreLocalXmrNode=true", "--useDevPrivilegeKeys=false", "--nodePort=9999", $"--appName={AppConstants.HavenoAppName}", $"--apiPassword={password}", "--apiPort=3201", "--passwordRequired=false", "--useNativeXmrWallet=false", "--torControlHost=127.0.0.1", "--torControlPort=9061");
 
-            string? line;
-            while ((line = streamReader.ReadLine()) is not null)
-            {
-#if DEBUG
-                Console.WriteLine(line);
-#endif
-                if (line.Contains("Init wallet"))
+                string? line;
+                while ((line = streamReader.ReadLine()) is not null)
                 {
-                    UpdateProgress("Initializing wallet", true);
+#if DEBUG
+                    Console.WriteLine(line);
+#endif
+                    if (line.Contains("Init wallet"))
+                    {
+                        UpdateProgress("Initializing wallet", true);
+                    }
+                    /*
+                    else if (line.Contains("All connections lost"))
+                    {
+
+                    }
+                    else if (line.Contains("Established a new connection from/to"))
+                    {
+
+                    }
+                    */
                 }
+            }
+            catch (Exception e)
+            {
+                StopHavenoDaemon();
+                UpdateException(e);
+                throw;
             }
         }, TaskCreationOptions.LongRunning);
     }
@@ -272,7 +310,10 @@ public class BackendService : Service
     public void StopHavenoDaemon()
     {
         _daemonCts?.Cancel();
+        _daemonCts?.Dispose();
+
         _torCts?.Cancel();
+        _torCts?.Dispose();
 
         StopSelf();
     }

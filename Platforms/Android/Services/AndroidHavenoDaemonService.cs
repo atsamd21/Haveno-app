@@ -6,7 +6,6 @@ using Manta.Helpers;
 using Manta.Models;
 using Manta.Singletons;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Manta.Services;
 
@@ -17,6 +16,14 @@ public class ProgressReceiver : BroadcastReceiver
 
     public override void OnReceive(Context? context, Intent? intent)
     {
+        var exceptionMessage = intent?.GetStringExtra("exception");
+        if (exceptionMessage is not null)
+        {
+            //OnProgressChanged?.Invoke(exceptionMessage);
+            CompletedTCS.SetException(new Exception(exceptionMessage));
+            return;
+        }
+
         var progress = intent?.GetStringExtra("progress");
         if (progress is null)
             return;
@@ -133,7 +140,16 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
         ContextCompat.StartForegroundService(Platform.AppContext, startBackendIntent);
 
+        try
+        {
         await receiver.CompletedTCS.Task;
+        }
+        catch
+        {
+            receiver.OnProgressChanged -= progressCb;
+            Platform.AppContext.UnregisterReceiver(receiver);
+            throw;
+        }
 
         _notificationSingleton.Start();
 
