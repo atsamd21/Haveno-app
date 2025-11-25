@@ -153,9 +153,6 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
         _notificationSingleton.Start();
 
-        receiver.OnProgressChanged -= progressCb;
-        Platform.AppContext.UnregisterReceiver(receiver);
-
         return true;
     }
 
