@@ -137,6 +137,9 @@
     <AndroidNativeLibrary Include="Platforms\Android\JniLibs\arm64-v8a\libloader32.so">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="Platforms\Android\JniLibs\armeabi-v7a\libprootwrapper.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
 
 
     <AndroidNativeLibrary Include="Platforms\Android\JniLibs\x86_64\libprootwrapper.so">

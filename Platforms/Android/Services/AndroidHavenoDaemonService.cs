@@ -67,13 +67,6 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
             await DownloadHavenoDaemonAsync(progressCb);
 
-            var arch = RuntimeInformation.OSArchitecture.ToString() == "X64" ? "amd64" : "arm64";
-
-            Proot.RunProotUbuntuCommand("rm", "/bin/java");
-            Proot.RunProotUbuntuCommand("ln", "-s", $"/usr/lib/jvm/java-21-openjdk-{arch}/bin/java", "/bin/java");
-            Proot.RunProotUbuntuCommand("ln", "-s", "/etc/java-21-openjdk/security/java.security", $"/usr/lib/jvm/java-21-openjdk-{arch}/conf/security/java.security");
-            Proot.RunProotUbuntuCommand("ln", "-s", "/etc/java-21-openjdk/security/java.policy", $"/usr/lib/jvm/java-21-openjdk-{arch}/conf/security/java.policy");
-            Proot.RunProotUbuntuCommand("ln", "-s", "/etc/java-21-openjdk/security/default.policy", $"/usr/lib/jvm/java-21-openjdk-{arch}/lib/security/default.policy");
             Proot.RunProotUbuntuCommand("chmod", "+x", Path.Combine(_daemonPath, "daemon.jar"));
         });
     }

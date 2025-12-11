@@ -147,7 +147,7 @@ public static class Proot
             "-b", "/sys",
             "-b", "/apex:/apex",
             "-b", "/system",
-            $"/usr/bin/{command}",
+            $"{command}",
             // Exit?
         }.Concat(arguments).ToArray();
 
@@ -161,6 +161,9 @@ public static class Proot
 
         env?.Add("TMPDIR", _tmpDir);
         env?.Add("PROOT_TMP_DIR", _tmpDir);
+
+        env?.Remove("PATH");
+        env?.Add("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
 
         var process = processBuilder?.Start();
         if (process is null || process.InputStream is null)
@@ -199,6 +202,7 @@ public static class Proot
             "-b", "/apex:/apex",
             "-b", "/system",
             $"/usr/bin/{command}",
+            $"{command}",
             // Exit?
         }.Concat(arguments).ToArray();
 
@@ -213,6 +217,9 @@ public static class Proot
         env?.Add("TMPDIR", _tmpDir);
         env?.Add("PROOT_TMP_DIR", _tmpDir);
         env?.Add("APP_HOME", AppHome);
+
+        env?.Remove("PATH");
+        env?.Add("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
 
         var process = processBuilder?.Start();
         if (process is null || process.InputStream is null)
