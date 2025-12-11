@@ -1,10 +1,10 @@
-#!/system/bin/sh
+    #!/system/bin/sh
 
-dir="$(cd "$(dirname "$0")"; pwd)"
+    dir="$(cd "$(dirname "$0")"; pwd)"
 
-unset LD_PRELOAD
-export LD_LIBRARY_PATH="$dir"
-export PROOT_LOADER="$dir/libloader.so"
-export PROOT_LOADER_32="$dir/libloader32.so"
+    unset LD_PRELOAD
+    export LD_LIBRARY_PATH="$dir"
+    export PROOT_LOADER="$dir/libloader.so"
+    export PROOT_LOADER_32="$dir/libloader32.so"
 
-exec "$dir/libproot.so" "$@"
+    exec "$dir/libproot.so" "$@"

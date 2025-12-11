@@ -34,7 +34,7 @@ I would assume that both of these IDEs send analytics and other information to t
 
 Guides for both Visual Studio and VS Code can be found <a href="https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-9.0&tabs=visual-studio" target="_blank">here</a>.
 
-Standalone uses proot which can be built using this script https://github.com/atsamd21/build-proot-android
+Standalone uses proot - https://github.com/atsamd21/proot
 
 ## GitHub actions
 
