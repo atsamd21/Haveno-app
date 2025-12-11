@@ -62,7 +62,7 @@ public static class Proot
         using var client = new HttpClient();
         client.Timeout = Timeout.InfiniteTimeSpan;
 
-        return await HttpClientHelper.DownloadWithProgressAsync($"https://github.com/atsamd21/ubuntu-rootfs/releases/download/v0.0.3/{_ubuntuTarName}.tar.gz", progressCb, client);
+        return await HttpClientHelper.DownloadWithProgressAsync($"https://github.com/atsamd21/rootfs/releases/download/v1.0.6/{_ubuntuTarName}.tar.gz", progressCb, client);
     }
 
     public static async Task ExtractUbuntu(Stream ubuntuDownloadStream, IProgress<double> progressCb)
