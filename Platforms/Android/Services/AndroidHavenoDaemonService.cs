@@ -142,7 +142,7 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
         try
         {
-        await receiver.CompletedTCS.Task;
+            await receiver.CompletedTCS.Task;
         }
         catch
         {
