@@ -70,7 +70,7 @@ jobs:
         shell: pwsh
 
       - name: Publish APK
-        run: dotnet publish ${{inputs.project-file}} -c ${{ inputs.build-config }} -f ${{ inputs.dotnet-version-target }}-android /p:AndroidPackageFormats=apk /p:AndroidKeyStore=true /p:AndroidSigningKeyStore=havenoapp.keystore /p:AndroidSigningKeyAlias=${{secrets.keystore-alias}} /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}" /p:AndroidSigningStorePass="${{ secrets.keystore-password }}" /p:JavaMaximumHeapSize=4G --no-restore
+        run: dotnet publish ${{inputs.project-file}} -c ${{ inputs.build-config }} -f ${{ inputs.dotnet-version-target }}-android /p:AndroidPackageFormats=apk /p:AndroidCreatePackagePerAbi=true /p:AndroidKeyStore=true /p:AndroidSigningKeyStore=havenoapp.keystore /p:AndroidSigningKeyAlias=${{secrets.keystore-alias}} /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}" /p:AndroidSigningStorePass="${{ secrets.keystore-password }}" /p:JavaMaximumHeapSize=4G --no-restore
 
       - name: Rename APK
         run: |
