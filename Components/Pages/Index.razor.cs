@@ -21,8 +21,6 @@ public partial class Index : ComponentBase
     public string? InstallationErrorMessage { get; set; }
 
     [Inject]
-    public ISetupService SetupService { get; set; } = default!;
-    [Inject]
     public ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject]
     public NavigationManager NavigationManager { get; set; } = default!;
@@ -137,13 +135,21 @@ public partial class Index : ComponentBase
         }
     }
 
+    private void InitializePreferences()
+    {
+        if (AppPreferences.Get<bool>(AppPreferences.PreferencesInitialized) is true)
+            return;
+
+        AppPreferences.Set(AppPreferences.PreferredCurrency, Currency.USD);
+        AppPreferences.Set(AppPreferences.PreferencesInitialized, true);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         IsInitializing = true;
         StateHasChanged();
 
-        // Set up things like default currency
-        await SetupService.InitialSetupAsync();
+        InitializePreferences();
 
         // For first time and if user does not install when first using app
         var daemonInstallOption = await SecureStorageHelper.GetAsync<DaemonInstallOptions>("daemon-installation-type");

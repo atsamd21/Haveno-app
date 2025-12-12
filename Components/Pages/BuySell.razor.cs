@@ -42,7 +42,7 @@ public partial class BuySell : ComponentBase, IDisposable
             if (field != value)
             {
                 field = value;
-                Helpers.Preferences.Set(Helpers.Preferences.SelectedCurrencyCode, value);
+                AppPreferences.Set(AppPreferences.SelectedCurrencyCode, value);
                 ResetFetch();
             }
         }
@@ -56,7 +56,7 @@ public partial class BuySell : ComponentBase, IDisposable
             if (field != value)
             {
                 field = value;
-                Helpers.Preferences.Set(Helpers.Preferences.SelectedPaymentMethod, value);
+                AppPreferences.Set(AppPreferences.SelectedPaymentMethod, value);
                 ResetFetch();
             }
         }
@@ -101,7 +101,7 @@ public partial class BuySell : ComponentBase, IDisposable
             SelectedCurrencyCode = string.Empty;
             SelectedPaymentMethod = string.Empty;
 
-            Helpers.Preferences.Set(Helpers.Preferences.OfferPaymentType, value);
+            AppPreferences.Set(AppPreferences.OfferPaymentType, value);
         }
     }
 
@@ -114,7 +114,7 @@ public partial class BuySell : ComponentBase, IDisposable
                 return;
 
             field = value; 
-            Helpers.Preferences.Set(Helpers.Preferences.ShowNoDepositOffers, value); 
+            AppPreferences.Set(AppPreferences.ShowNoDepositOffers, value); 
         } 
     }
 
@@ -143,13 +143,14 @@ public partial class BuySell : ComponentBase, IDisposable
                 return;
 
             field = value;
-            Helpers.Preferences.Set(Helpers.Preferences.IsToggled, value);
+            AppPreferences.Set(AppPreferences.IsToggled, value);
             Direction = value ? "SELL" : "BUY";
             ResetFetch();
         }
     }
 
     public string PreferredCurrency { get; set; } = string.Empty;
+    // TODO fetch this on rerender
     public string CurrentMarketPrice { get; set; } = string.Empty;
     public NumberFormatInfo PreferredCurrencyFormat { get; set; } = default!;
 
@@ -245,10 +246,10 @@ public partial class BuySell : ComponentBase, IDisposable
             await Task.Delay(5_000);
         }
 
-        OfferPaymentType = Helpers.Preferences.Get<int?>(Helpers.Preferences.OfferPaymentType) ?? 0;
-        IsToggled = Helpers.Preferences.Get<bool?>(Helpers.Preferences.IsToggled) ?? false;
-        SelectedCurrencyCode = Helpers.Preferences.Get<string?>(Helpers.Preferences.SelectedCurrencyCode) ?? string.Empty;
-        SelectedPaymentMethod = Helpers.Preferences.Get<string?>(Helpers.Preferences.SelectedPaymentMethod) ?? string.Empty;
+        OfferPaymentType = AppPreferences.Get<int?>(AppPreferences.OfferPaymentType) ?? 0;
+        IsToggled = AppPreferences.Get<bool?>(AppPreferences.IsToggled) ?? false;
+        SelectedCurrencyCode = AppPreferences.Get<string?>(AppPreferences.SelectedCurrencyCode) ?? string.Empty;
+        SelectedPaymentMethod = AppPreferences.Get<string?>(AppPreferences.SelectedPaymentMethod) ?? string.Empty;
         ShowNoDepositOffers = true;
 
         await base.OnInitializedAsync();

@@ -247,7 +247,7 @@ public partial class Settings : ComponentBase, IDisposable
         var response = await HavenoXmrNodeService.GetMoneroNodeAsync();
         ConnectedMoneroNodeUrl = response.Url;
 
-        Helpers.Preferences.Set(Helpers.Preferences.CustomXmrNode, ConnectedMoneroNodeUrl);
+        AppPreferences.Set(AppPreferences.CustomXmrNode, ConnectedMoneroNodeUrl);
 
         ShowConnectToMoneroNodeModal = false;
         MoneroNodeUrl = string.Empty;

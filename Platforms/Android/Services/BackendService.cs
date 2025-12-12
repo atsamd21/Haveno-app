@@ -3,6 +3,7 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using AndroidX.Core.App;
+using Manta.Helpers;
 using Manta.Models;
 using System.Net.Sockets;
 using System.Text;
@@ -228,9 +229,9 @@ public class BackendService : Service
                 string xmrNode = string.Empty;
                 List<string> xmrNodes = AppConstants.Network == "XMR_MAINNET" ? ["http://192.99.8.110:18089", "http://37.187.74.171:18089", "http://88.99.195.15:18089"] : ["http://23.137.57.100:38089", "http://192.99.8.110:38089", "http://37.187.74.171:38089", "http://88.99.195.15:38089"];
 
-                if (!string.IsNullOrEmpty(Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)))
+                if (!string.IsNullOrEmpty(AppPreferences.Get<string>(AppPreferences.CustomXmrNode)))
                 {
-                    xmrNode = $"--xmrNode={Helpers.Preferences.Get<string>(Helpers.Preferences.CustomXmrNode)}";
+                    xmrNode = $"--xmrNode={AppPreferences.Get<string>(AppPreferences.CustomXmrNode)}";
                 }
                 else
                 {

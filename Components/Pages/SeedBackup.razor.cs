@@ -1,4 +1,5 @@
 ﻿using HavenoSharp.Services;
+using Manta.Helpers;
 using Microsoft.AspNetCore.Components;
 
 namespace Manta.Components.Pages;
@@ -79,7 +80,7 @@ public partial class SeedBackup : ComponentBase
 
     public void Submit()
     {
-        Helpers.Preferences.Set(Helpers.Preferences.SeedBackupDone, true);
+        AppPreferences.Set(AppPreferences.SeedBackupDone, true);
         NavigationManager.NavigateTo("/wallet");
     }
 }

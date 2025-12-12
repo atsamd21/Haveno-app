@@ -126,7 +126,7 @@ public partial class Market : ComponentBase, IDisposable
 
                 PreferredCurrency = await LocalStorage.GetItemAsStringAsync("preferredCurrency") ?? CurrencyCultureInfo.FallbackCurrency;
 
-                ShowNotice = !Helpers.Preferences.Get<bool>(Helpers.Preferences.InitialNoticeAcknowledged);
+                ShowNotice = !AppPreferences.Get<bool>(AppPreferences.InitialNoticeAcknowledged);
 
                 try
                 {
@@ -163,7 +163,7 @@ public partial class Market : ComponentBase, IDisposable
 
     private void AcknowledgeNotice()
     {
-        Helpers.Preferences.Set(Helpers.Preferences.InitialNoticeAcknowledged, true);
+        AppPreferences.Set(AppPreferences.InitialNoticeAcknowledged, true);
     }
 
     private async void HandleBalanceFetch(bool isFetching)

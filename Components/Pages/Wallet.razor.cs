@@ -65,7 +65,7 @@ public partial class Wallet : ComponentBase, IDisposable
         { 
             try
             {
-                if (!Helpers.Preferences.Get<bool>(Helpers.Preferences.SeedBackupDone))
+                if (!AppPreferences.Get<bool>(AppPreferences.SeedBackupDone))
                 {
                     NavigationManager.NavigateTo("/wallet/seedbackup?title=Seed%20Backup");
                     return;

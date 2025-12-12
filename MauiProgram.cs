@@ -38,8 +38,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<TradeStatisticsSingleton>();
         builder.Services.AddSingleton<DaemonConnectionSingleton>();
 
-        builder.Services.AddScoped<ISetupService, SetupService>();
-
         builder.Services.AddHavenoServices();
 
 #if ANDROID
