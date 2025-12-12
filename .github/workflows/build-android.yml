@@ -54,21 +54,6 @@ jobs:
           fileName: 'havenoapp.keystore'
           encodedString: ${{ secrets.keystore }}
 
-      - name: Change line endings to LF
-        run: |
-            $dirs = @(
-                "${{ inputs.project-folder }}\Platforms\Android\JniLibs\arm64-v8a",
-                "${{ inputs.project-folder }}\Platforms\Android\JniLibs\x86_64"
-            )
-
-            foreach ($dir in $dirs) {
-                $file = Join-Path $dir "libprootwrapper.so"
-                if (Test-Path $file) {
-                (Get-Content $file -Raw) -replace "`r`n","`n" | Set-Content $file -NoNewline
-                }
-            }
-        shell: pwsh
-
       - name: Publish APK
         run: dotnet publish ${{inputs.project-file}} -c ${{ inputs.build-config }} -f ${{ inputs.dotnet-version-target }}-android /p:AndroidPackageFormats=apk /p:AndroidCreatePackagePerAbi=true /p:AndroidKeyStore=true /p:AndroidSigningKeyStore=havenoapp.keystore /p:AndroidSigningKeyAlias=${{secrets.keystore-alias}} /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}" /p:AndroidSigningStorePass="${{ secrets.keystore-password }}" /p:JavaMaximumHeapSize=4G --no-restore
 
