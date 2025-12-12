@@ -37,6 +37,16 @@ jobs:
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
 
+      - name: Install JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '17'
+
+      - name: Check Java version
+        run: |
+            java --version
+
       - uses: actions/checkout@v3
         name: Checkout the code
 
