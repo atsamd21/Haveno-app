@@ -1,6 +1,4 @@
 ﻿using Manta.Helpers;
-using System.Formats.Tar;
-using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -9,7 +7,6 @@ namespace Manta.Services;
 public static class Proot
 {
     private static string _prootPath;
-    private static string _rootfsDir;
     private static string _filesDir;
     private static string _tmpDir;
     private static string _ubuntuTarName;
@@ -23,7 +20,6 @@ public static class Proot
 
         _prootPath = Path.Combine(Android.App.Application.Context.ApplicationInfo?.NativeLibraryDir!, "libprootwrapper.so");
         _filesDir = Android.App.Application.Context.FilesDir!.AbsolutePath;
-        _rootfsDir = Path.Combine(_filesDir, _ubuntuTarName);
         _tmpDir = Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, "tmp");
         HomeDir = Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, "home");
 
@@ -48,15 +44,6 @@ public static class Proot
         }
     }
 
-    private static async Task CreateFileWithPermissions(string path, Stream data)
-    {
-        using var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
-
-        await data.CopyToAsync(fs);
-
-        SetFullPermissions(path);
-    }
-
     public static async Task<Stream> DownloadUbuntu(IProgress<double> progressCb)
     {
         using var client = new HttpClient();
@@ -65,78 +52,12 @@ public static class Proot
         return await HttpClientHelper.DownloadWithProgressAsync($"https://github.com/atsamd21/rootfs/releases/download/v1.0.6/{_ubuntuTarName}.tar.gz", progressCb, client);
     }
 
-    public static async Task ExtractUbuntu(Stream ubuntuDownloadStream, IProgress<double> progressCb)
-    {
-        progressCb.Report(101f);
-
-        File.SetUnixFileMode(
-            _tmpDir,
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-            UnixFileMode.OtherRead | UnixFileMode.OtherExecute
-        );
-
-        if (File.GetUnixFileMode(_tmpDir) != (UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-            UnixFileMode.OtherRead | UnixFileMode.OtherExecute))
-        {
-            throw new Exception("Could not set file permissions");
-        }
-
-        // Can be problematic due to symlinks
-        if (Directory.Exists(_rootfsDir))
-            Directory.Delete(_rootfsDir, true);
-
-        Directory.CreateDirectory(_rootfsDir);
-        SetFullPermissions(_rootfsDir);
-
-        using var gzipStream = new GZipStream(ubuntuDownloadStream, CompressionMode.Decompress);
-        using var tarReader = new TarReader(gzipStream);
-
-        TarEntry? entry;
-        while ((entry = await tarReader.GetNextEntryAsync()) is not null)
-        {
-            string destPath = Path.Combine(_rootfsDir, entry.Name);
-            string? parentDir = Path.GetDirectoryName(destPath);
-
-            if (entry.EntryType == TarEntryType.Directory)
-            {
-                Directory.CreateDirectory(destPath);
-                SetFullPermissions(destPath);
-                continue;
-            }
-            else if (entry.EntryType == TarEntryType.SymbolicLink)
-            {
-                if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
-                {
-                    Directory.CreateDirectory(parentDir);
-                    SetFullPermissions(parentDir);
-                }
-
-                File.CreateSymbolicLink(destPath, entry.LinkName);
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
-                {
-                    Directory.CreateDirectory(parentDir);
-                    SetFullPermissions(parentDir);
-                }
-
-                if (entry.DataStream is not null)
-                {
-                    await CreateFileWithPermissions(destPath, entry.DataStream);
-                }
-            }
-        }
-    }
-
     public static string RunProotUbuntuCommand(string command, params string[] arguments)
     {
         var args = new string[]
         {
             _prootPath,
-            "-R", _rootfsDir,
+            "-R", ProotGlobals.RootfsDir,
             "--link2symlink",
             "-0",
             "-b", $"{_tmpDir}:/tmp",
@@ -190,7 +111,7 @@ public static class Proot
         var args = new string[]
         {
             _prootPath,
-            "-R", _rootfsDir,
+            "-R", ProotGlobals.RootfsDir,
             "--link2symlink",
             "-0",
             "-b", $"{_tmpDir}:/tmp",
@@ -201,7 +122,8 @@ public static class Proot
             "-b", "/sys",
             "-b", "/apex:/apex",
             "-b", "/system",
-            $"/usr/bin/{command}",
+            //"-b", "/system/lib64:/android-lib64",
+            //"-b", "/system/lib:/android-lib",
             $"{command}",
             // Exit?
         }.Concat(arguments).ToArray();

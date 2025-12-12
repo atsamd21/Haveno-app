@@ -5,7 +5,6 @@ using HavenoSharp.Singletons;
 using Manta.Helpers;
 using Manta.Models;
 using Manta.Singletons;
-using System.Runtime.InteropServices;
 
 namespace Manta.Services;
 
@@ -61,7 +60,12 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
             if (!await SecureStorageHelper.GetAsync<bool>("ubuntu-installed"))
             {
                 using var ubuntuDownloadStream = await Proot.DownloadUbuntu(progressCb);
-                await Proot.ExtractUbuntu(ubuntuDownloadStream, progressCb);
+                //await Proot.ExtractUbuntu(ubuntuDownloadStream, progressCb);
+
+                progressCb.Report(101f);
+
+                await Tar.ExtractGzAsync(ubuntuDownloadStream, ProotGlobals.RootfsDir);
+
                 await SecureStorageHelper.SetAsync("ubuntu-installed", true);
             }
 
