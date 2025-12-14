@@ -41,15 +41,17 @@ jobs:
         name: Checkout the code
 
       - name: Read ApplicationId from csproj
-        shell: pwsh
+        shell: bash
         run: |
-            [xml]$csproj = Get-Content "${{ inputs.project-file }}"
+            APP_ID=$(grep "<ApplicationId>" "${{ inputs.project-file }}" | head -n1 | sed 's/.*<ApplicationId>\(.*\)<\/ApplicationId>.*/\1/')
 
-            $APP_ID = $csproj.Project.PropertyGroup.ApplicationId
-            if (-not $APP_ID) {
-                Write-Error "ApplicationId not found in csproj"
-                exit 1
-            }
+            if [ -z "$APP_ID" ]; then
+              echo "ApplicationId not found in csproj"
+              exit 1
+            fi
+
+            echo "APP_ID=$APP_ID" >> "$GITHUB_ENV"
+            echo "$APP_ID"
 
       - name: Install MAUI Workload
         run: dotnet workload install maui --ignore-failed-sources
