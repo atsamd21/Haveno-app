@@ -40,6 +40,17 @@ jobs:
       - uses: actions/checkout@v3
         name: Checkout the code
 
+      - name: Read ApplicationId from csproj
+        shell: bash
+        run: |
+            [xml]$csproj = Get-Content "${{ inputs.project-file }}"
+
+            $APP_ID = $csproj.Project.PropertyGroup.ApplicationId
+            if (-not $APP_ID) {
+                Write-Error "ApplicationId not found in csproj"
+                exit 1
+            }
+
       - name: Install MAUI Workload
         run: dotnet workload install maui --ignore-failed-sources
 
@@ -74,7 +85,7 @@ jobs:
 
       - name: Rename APK
         run: |
-            mv "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/com.haveno-Signed.apk" "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno.apk"
+            mv "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/${APP_ID}-Signed.apk" "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno.apk"
         shell: bash
 
       - name: Upload APK
