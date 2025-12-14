@@ -16,7 +16,22 @@ public static class Proot
 
     static Proot()
     {
-        _ubuntuTarName = "ubuntu-base-" + (RuntimeInformation.OSArchitecture.ToString() == "X64" ? "x86_64" : "arm64-v8a");
+        string architecture;
+        switch (RuntimeInformation.OSArchitecture)
+        {
+            case Architecture.X64:
+                architecture = "x86_64";
+                break;
+            case Architecture.Arm64:
+                architecture = "arm64-v8a";
+                break;
+            case Architecture.Arm:
+                architecture = "armeabi-v7a";
+                break;
+            default: throw new NotSupportedException($"Architecture \"{RuntimeInformation.OSArchitecture}\" is not supported.");
+        }
+
+        _ubuntuTarName = $"ubuntu-base-{architecture}";
 
         _prootPath = Path.Combine(Android.App.Application.Context.ApplicationInfo?.NativeLibraryDir!, "libprootwrapper.so");
         _filesDir = Android.App.Application.Context.FilesDir!.AbsolutePath;
