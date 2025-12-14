@@ -41,7 +41,7 @@ jobs:
         name: Checkout the code
 
       - name: Read ApplicationId from csproj
-        shell: bash
+        shell: pwsh
         run: |
             [xml]$csproj = Get-Content "${{ inputs.project-file }}"
 
