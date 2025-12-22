@@ -78,7 +78,7 @@ public static class AlarmUtils
     }
 }
 
-[BroadcastReceiver(Enabled = true, Exported = true)]
+[BroadcastReceiver(Enabled = true, Exported = false)]
 public class AlarmReceiver : BroadcastReceiver
 {
     public override void OnReceive(Context? context, Intent? intent)
