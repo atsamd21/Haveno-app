@@ -56,6 +56,7 @@
     @* needs a copy btn*@
     <div class="installation-error" style="max-height: 60vh;overflow-y: auto;">
         <p class="installation-error-text">@InstallationErrorMessage</p>
+        <button class="button-grey" @onclick="@(async () => await Clipboard.Default.SetTextAsync(InstallationErrorMessage))">Copy error</button>
     </div>
 </Modal>
 <Modal IsOpen="IsDaemonStartInfoModalOpen || DaemonStartInfo != string.Empty" Title="Initializing" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">

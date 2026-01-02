@@ -4,6 +4,8 @@
 {
     <Modal Title="Error" @bind-IsOpen="IsOpen" ModalButtonOptions="ModalButtonOptions.NONE">
         <p>@Message</p>
+        <br />
+        <button class="button-grey copy" @onclick="@(async () => await Clipboard.Default.SetTextAsync(Message))">Copy error</button>
     </Modal>
 }
 @ChildContent
