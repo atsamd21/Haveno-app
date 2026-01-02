@@ -1,4 +1,6 @@
-﻿namespace Manta.Services;
+﻿using Manta.Extensions;
+
+namespace Manta.Services;
 
 public static class ProotGlobals
 {
@@ -13,7 +15,9 @@ public static class ProotGlobals
         ProotPath = Path.Combine(Android.App.Application.Context.ApplicationInfo?.NativeLibraryDir!, "libprootwrapper.so");
 
         AndroidFilesDir = Android.App.Application.Context.FilesDir!.AbsolutePath;
-        RootfsDir = Path.Combine(AndroidFilesDir, "ubuntu");
+        //RootfsDir = Path.Combine(AndroidFilesDir, "ubuntu");
+
+        RootfsDir = Path.Combine(AndroidFilesDir, $"ubuntu-base-{RuntimeInformationExtensions.GetOsArchitectureFullName()}");
         Directory.CreateDirectory(RootfsDir);
 
         TmpDir = Path.Combine(AndroidFilesDir, "tmp");

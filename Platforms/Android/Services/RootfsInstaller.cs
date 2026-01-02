@@ -1,5 +1,5 @@
-﻿using Manta.Helpers;
-using System.Runtime.InteropServices;
+﻿using Manta.Extensions;
+using Manta.Helpers;
 
 namespace Manta.Services;
 
@@ -12,22 +12,7 @@ public static class RootfsInstaller
 
     static RootfsInstaller()
     {
-        string architecture;
-        switch (RuntimeInformation.OSArchitecture)
-        {
-            case Architecture.X64:
-                architecture = "x86_64";
-                break;
-            case Architecture.Arm64:
-                architecture = "arm64-v8a";
-                break;
-            case Architecture.Arm:
-                architecture = "armeabi-v7a";
-                break;
-            default: throw new NotSupportedException($"Architecture \"{RuntimeInformation.OSArchitecture}\" is not supported.");
-        }
-
-        _ubuntuDownloadUrl = $"https://github.com/atsamd21/rootfs/releases/download/v{RootfsVersionString}/ubuntu-base-{architecture}.tar.gz";
+        _ubuntuDownloadUrl = $"https://github.com/atsamd21/rootfs/releases/download/v{RootfsVersionString}/ubuntu-base-{RuntimeInformationExtensions.GetOsArchitectureFullName()}.tar.gz";
     }
 
     public static async Task InstallAsync(IProgress<double> progressCb)
