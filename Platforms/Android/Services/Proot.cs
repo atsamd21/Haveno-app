@@ -1,90 +1,28 @@
-﻿using Manta.Helpers;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Text;
 
 namespace Manta.Services;
 
 public static class Proot
 {
-    private static string _prootPath;
-    private static string _filesDir;
-    private static string _tmpDir;
-    private static string _ubuntuTarName;
-
-    public static string HomeDir;
-    public static string AppHome = string.Empty;
-
-    static Proot()
-    {
-        string architecture;
-        switch (RuntimeInformation.OSArchitecture)
-        {
-            case Architecture.X64:
-                architecture = "x86_64";
-                break;
-            case Architecture.Arm64:
-                architecture = "arm64-v8a";
-                break;
-            case Architecture.Arm:
-                architecture = "armeabi-v7a";
-                break;
-            default: throw new NotSupportedException($"Architecture \"{RuntimeInformation.OSArchitecture}\" is not supported.");
-        }
-
-        _ubuntuTarName = $"ubuntu-base-{architecture}";
-
-        _prootPath = Path.Combine(Android.App.Application.Context.ApplicationInfo?.NativeLibraryDir!, "libprootwrapper.so");
-        _filesDir = Android.App.Application.Context.FilesDir!.AbsolutePath;
-        _tmpDir = Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, "tmp");
-        HomeDir = Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, "home");
-
-        Directory.CreateDirectory(_tmpDir);
-        SetFullPermissions(_tmpDir);
-        Directory.CreateDirectory(HomeDir);
-        SetFullPermissions(HomeDir);
-    }
-
-    private static void SetFullPermissions(string path)
-    {
-        try
-        {
-            File.SetUnixFileMode(path,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute |
-                UnixFileMode.OtherRead | UnixFileMode.OtherWrite | UnixFileMode.OtherExecute);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    public static async Task<Stream> DownloadUbuntu(IProgress<double> progressCb)
-    {
-        using var client = new HttpClient();
-        client.Timeout = Timeout.InfiniteTimeSpan;
-
-        return await HttpClientHelper.DownloadWithProgressAsync($"https://github.com/atsamd21/rootfs/releases/download/v1.0.6/{_ubuntuTarName}.tar.gz", progressCb, client);
-    }
-
-    public static string RunProotUbuntuCommand(string command, params string[] arguments)
+    //"-b", "/system/lib64:/android-lib64",
+    //"-b", "/system/lib:/android-lib",
+    private static Java.Lang.Process? CreateProotProcess(string command, params string[] arguments)
     {
         var args = new string[]
         {
-            _prootPath,
+            ProotGlobals.ProotPath,
             "-R", ProotGlobals.RootfsDir,
+            "--kill-on-exit",
             "--link2symlink",
             "-0",
-            "-b", $"{_tmpDir}:/tmp",
-            "-b", $"{HomeDir}:/home",
-            "-w", "/",
+            "-b", $"{ProotGlobals.TmpDir}:/tmp",
+            "-b", $"{ProotGlobals.HomeDir}:/home",
             "-b", "/dev",
             "-b", "/proc",
             "-b", "/sys",
             "-b", "/apex:/apex",
             "-b", "/system",
             $"{command}",
-            // Exit?
         }.Concat(arguments).ToArray();
 
         var processBuilder = new Java.Lang.ProcessBuilder()
@@ -95,15 +33,28 @@ public static class Proot
         env?.Remove("TMPDIR");
         env?.Remove("PROOT_TMP_DIR");
 
-        env?.Add("TMPDIR", _tmpDir);
-        env?.Add("PROOT_TMP_DIR", _tmpDir);
+        env?.Add("TMPDIR", ProotGlobals.TmpDir);
+        env?.Add("PROOT_TMP_DIR", ProotGlobals.TmpDir);
 
         env?.Remove("PATH");
         env?.Add("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
 
-        var process = processBuilder?.Start();
+        env?.Add("DEBIAN_FRONTEND", "noninteractive");
+        env?.Add("DEBCONF_NONINTERACTIVE_SEEN", "true");
+        env?.Add("LC_ALL", "C");
+        env?.Add("LANGUAGE", "C");
+
+        env?.Remove("LANG");
+        env?.Add("LANG", "C");
+
+        return processBuilder?.Start();
+    }
+
+    public static string RunProotUbuntuCommand(string command, params string[] arguments)
+    {
+        var process = CreateProotProcess(command, arguments);
         if (process is null || process.InputStream is null)
-            throw new Exception("process is null or process.InputStream is null");
+            throw new Exception("process is null or process.InputStream is null.");
 
         using var streamReader = new StreamReader(process.InputStream);
 
@@ -123,44 +74,9 @@ public static class Proot
 
     public static StreamReader RunProotUbuntuCommand(string command, CancellationToken cancellationToken, params string[] arguments)
     {
-        var args = new string[]
-        {
-            _prootPath,
-            "-R", ProotGlobals.RootfsDir,
-            "--link2symlink",
-            "-0",
-            "-b", $"{_tmpDir}:/tmp",
-            "-b", $"{HomeDir}:/home",
-            "-w", "/",
-            "-b", "/dev",
-            "-b", "/proc",
-            "-b", "/sys",
-            "-b", "/apex:/apex",
-            "-b", "/system",
-            //"-b", "/system/lib64:/android-lib64",
-            //"-b", "/system/lib:/android-lib",
-            $"{command}",
-            // Exit?
-        }.Concat(arguments).ToArray();
-
-        var processBuilder = new Java.Lang.ProcessBuilder()
-            .Command(args)?
-            .RedirectErrorStream(true);
-
-        var env = processBuilder?.Environment();
-        env?.Remove("TMPDIR");
-        env?.Remove("PROOT_TMP_DIR");
-
-        env?.Add("TMPDIR", _tmpDir);
-        env?.Add("PROOT_TMP_DIR", _tmpDir);
-        env?.Add("APP_HOME", AppHome);
-
-        env?.Remove("PATH");
-        env?.Add("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
-
-        var process = processBuilder?.Start();
+        var process = CreateProotProcess(command, arguments);
         if (process is null || process.InputStream is null)
-            throw new Exception("process is null or process.InputStream is null");
+            throw new Exception("process is null or process.InputStream is null.");
 
         var streamReader = new StreamReader(process.InputStream);
 

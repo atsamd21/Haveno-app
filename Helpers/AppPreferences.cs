@@ -15,8 +15,11 @@ public static class AppPreferences
     public const string IsToggled = "is-toggled";
     public const string OfferPaymentType = "offer-payment-type";
     //
+    // TODO is this still needed?
     public const string CustomXmrNode = "custom-xmr-node";
     public const string InitialNoticeAcknowledged = "initial-notice-acknowledged";
+
+    public const string RootfsVersion = "rootfs-version";
 
     /// <summary>
     /// Note: value types will not return a null value.

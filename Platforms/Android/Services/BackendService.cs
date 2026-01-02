@@ -214,60 +214,8 @@ public class BackendService : Service
 
             _daemonCts = new();
 
-            Proot.AppHome = daemonPath;
-
-            // node.monerodevs.org = 192.99.8.110
-            // node2.monerodevs.org = 37.187.74.171
-            // node3.monerodevs.org = 88.99.195.15
-
-            // rucknium.me = 95.217.143.178
-            // selsta2.featherwallet.net = 88.198.199.23
-            // ravfx.its-a-node.org = 70.29.255.7
-
             try
             {
-                string xmrNode = string.Empty;
-                List<string> xmrNodes = AppConstants.Network == "XMR_MAINNET" ? ["http://192.99.8.110:18089", "http://37.187.74.171:18089", "http://88.99.195.15:18089"] : ["http://23.137.57.100:38089", "http://192.99.8.110:38089", "http://37.187.74.171:38089", "http://88.99.195.15:38089"];
-
-                if (!string.IsNullOrEmpty(AppPreferences.Get<string>(AppPreferences.CustomXmrNode)))
-                {
-                    xmrNode = $"--xmrNode={AppPreferences.Get<string>(AppPreferences.CustomXmrNode)}";
-                }
-                else
-                {
-                    // Really we just need to fix the domain name issue and figure out why even though --xmrNodes is specified it still tries to sync with Haveno's default nodes
-                    // Might be due to which node was last successfully synced but either way something is overriding the cli argument
-                    using var tcpClient = new TcpClient();
-
-                    string? node = null;
-                    var random = new Random();
-
-                    while (xmrNodes.Count > 0)
-                    {
-                        node = xmrNodes[random.Next(xmrNodes.Count)];
-
-                        try
-                        {
-                            var split = node.Split(':');
-                            tcpClient.ConnectAsync(split[1].Remove(0, 2), int.Parse(split[2])).Wait(TimeSpan.FromSeconds(2));
-
-                            if (!tcpClient.Connected)
-                            {
-                                throw new Exception();
-                            }
-
-                            xmrNode = $"--xmrNode={node}";
-
-                            break;
-                        }
-                        catch (Exception)
-                        {
-                            xmrNodes.Remove(node);
-                            continue;
-                        }
-                    }
-                }
-
 #if DEBUG
                 var logLevel = "--logLevel=INFO";
 #else
@@ -275,7 +223,26 @@ public class BackendService : Service
             var logLevel = "--logLevel=INFO";
             //var logLevel = "--logLevel=OFF";
 #endif
-                using var streamReader = Proot.RunProotUbuntuCommand("java", _daemonCts.Token, "-Xmx2G", "-jar", $"{Path.Combine(daemonPath, "daemon.jar")}", xmrNode, logLevel, "--maxMemory=1200", "--disableRateLimits=true", $"--baseCurrencyNetwork={AppConstants.Network}", "--ignoreLocalXmrNode=true", "--useDevPrivilegeKeys=false", "--nodePort=9999", $"--appName={AppConstants.HavenoAppName}", $"--apiPassword={password}", "--apiPort=3201", "--passwordRequired=false", "--useNativeXmrWallet=false", "--torControlHost=127.0.0.1", "--torControlPort=9061");
+                using var streamReader = Proot.RunProotUbuntuCommand(
+                    "java", 
+                    _daemonCts.Token, 
+                    "-Xmx2G", 
+                    "-jar", 
+                    $"{Path.Combine(daemonPath, "daemon.jar")}",
+                    logLevel, 
+                    "--maxMemory=1200", 
+                    "--disableRateLimits=true", 
+                    $"--baseCurrencyNetwork={AppConstants.Network}", 
+                    "--ignoreLocalXmrNode=true", 
+                    "--useDevPrivilegeKeys=false", 
+                    "--nodePort=9999", 
+                    $"--appName={AppConstants.HavenoAppName}",
+                    $"--apiPassword={password}", 
+                    "--apiPort=3201", 
+                    "--passwordRequired=false", 
+                    "--useNativeXmrWallet=false", 
+                    "--torControlHost=127.0.0.1", 
+                    "--torControlPort=9061");
 
                 string? line;
                 while ((line = streamReader.ReadLine()) is not null)

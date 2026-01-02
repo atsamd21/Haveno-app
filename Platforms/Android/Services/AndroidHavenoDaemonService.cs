@@ -46,7 +46,7 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
         IHavenoVersionService versionService, 
         IHavenoAccountService accountService,
         NotificationSingleton notificationSingleton
-        ) : base( walletService, versionService, accountService, Path.Combine(Proot.HomeDir, "daemon"))
+        ) : base( walletService, versionService, accountService, Path.Combine(ProotGlobals.HomeDir, "daemon"))
     {
         _grpcChannelSingleton = grpcChannelSingleton;
         _notificationSingleton = notificationSingleton;
@@ -57,16 +57,9 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
     {
         await Task.Run(async() =>
         {
-            if (!await SecureStorageHelper.GetAsync<bool>("ubuntu-installed"))
+            if (!RootfsInstaller.IsInstalled())
             {
-                using var ubuntuDownloadStream = await Proot.DownloadUbuntu(progressCb);
-                //await Proot.ExtractUbuntu(ubuntuDownloadStream, progressCb);
-
-                progressCb.Report(101f);
-
-                await Tar.ExtractGzAsync(ubuntuDownloadStream, ProotGlobals.RootfsDir);
-
-                await SecureStorageHelper.SetAsync("ubuntu-installed", true);
+                await RootfsInstaller.InstallAsync(progressCb);
             }
 
             await DownloadHavenoDaemonAsync(progressCb);
@@ -77,6 +70,14 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
     public override async Task TryUpdateHavenoAsync(IProgress<double> progressCb)
     {
+        var rootfsVersion = RootfsInstaller.GetInstalledVersion();
+        
+        if (rootfsVersion is null || RootfsInstaller.RootfsVersion > RootfsInstaller.GetInstalledVersion())
+        {
+            // Reinstall as nothing is saved to the rootfs anyway
+            await RootfsInstaller.InstallAsync(progressCb);
+        }
+
         await base.TryUpdateHavenoAsync(progressCb);
         Proot.RunProotUbuntuCommand("chmod", "+x", Path.Combine(_daemonPath, "daemon.jar"));
     }
