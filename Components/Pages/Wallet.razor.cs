@@ -1,5 +1,4 @@
-﻿using Blazored.LocalStorage;
-using HavenoSharp.Models;
+﻿using HavenoSharp.Models;
 using HavenoSharp.Models.Requests;
 using HavenoSharp.Services;
 using Manta.Helpers;
@@ -14,8 +13,6 @@ public partial class Wallet : ComponentBase, IDisposable
 {
     [Inject]
     public BalanceSingleton BalanceSingleton { get; set; } = default!;
-    [Inject]
-    public ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject]
     public IHavenoWalletService WalletService { get; set; } = default!;
     [Inject]
@@ -71,7 +68,7 @@ public partial class Wallet : ComponentBase, IDisposable
                     return;
                 }
 
-                PreferredCurrency = await LocalStorage.GetItemAsStringAsync("preferredCurrency") ?? CurrencyCultureInfo.FallbackCurrency;
+                PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString();
                 PreferredCurrencyFormat = CurrencyCultureInfo.GetFormatForCurrency((Currency)Enum.Parse(typeof(Currency), PreferredCurrency))!;
 
                 Balance = BalanceSingleton.WalletInfo;

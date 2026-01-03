@@ -1,5 +1,4 @@
-﻿using Blazored.LocalStorage;
-using HavenoSharp.Models;
+﻿using HavenoSharp.Models;
 using HavenoSharp.Services;
 using Manta.Components.Reusable;
 using Manta.Helpers;
@@ -17,8 +16,6 @@ public partial class BuySell : ComponentBase, IDisposable
     public IHavenoPaymentAccountService PaymentAccountService { get; set; } = default!;
     [Inject]
     public IHavenoOfferService OfferService { get; set; } = default!;
-    [Inject]
-    public ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject]
     public IJSRuntime JS { get; set; } = default!;
     [Inject]
@@ -216,7 +213,7 @@ public partial class BuySell : ComponentBase, IDisposable
                 CryptoPaymentMethods = PaymentMethodsHelper.PaymentMethodsDictionary
                     .Where(x => filteredCryptoPaymentMethodIds.Contains(x.Key)).ToDictionary();
 
-                PreferredCurrency = await LocalStorage.GetItemAsStringAsync("preferredCurrency") ?? CurrencyCultureInfo.FallbackCurrency;
+                PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString();
                 PreferredCurrencyFormat = CurrencyCultureInfo.GetFormatForCurrency((Currency)Enum.Parse(typeof(Currency), PreferredCurrency))!;
 
                 try

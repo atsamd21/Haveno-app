@@ -115,37 +115,23 @@ public partial class Market : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        while (true)
-        {
-            try
-            {
-                IsFetching = true;
-                StateHasChanged();
+        IsFetching = true;
+        StateHasChanged();
 
-                await BalanceSingleton.InitializedTCS.Task;
+        await BalanceSingleton.InitializedTCS.Task;
 
-                try
-                {
-                    CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
-                }
-                catch (KeyNotFoundException)
-                {
-                    CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[CurrencyCultureInfo.FallbackCurrency].ToString("0.00");
-                    PreferredCurrency = CurrencyCultureInfo.FallbackCurrency;
-                }
-
-                break;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-
-            await Task.Delay(5_000);
-        }
-
-        PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString() ?? CurrencyCultureInfo.FallbackCurrency;
+        PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString();
         ShowNotice = !AppPreferences.Get<bool>(AppPreferences.InitialNoticeAcknowledged);
+
+        try
+        {
+            CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
+        }
+        catch (KeyNotFoundException)
+        {
+            CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[CurrencyCultureInfo.FallbackCurrency].ToString("0.00");
+            PreferredCurrency = CurrencyCultureInfo.FallbackCurrency;
+        }
 
         TradeStatistics = TradeStatisticsSingleton.TradeStatistics;
         ProcessTradeStatistics();

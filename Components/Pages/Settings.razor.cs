@@ -398,11 +398,7 @@ public partial class Settings : ComponentBase, IDisposable
 #if ANDROID
         IsNotificationsToggled = (await Permissions.CheckStatusAsync<NotificationPermission>() == PermissionStatus.Granted) && (await SecureStorageHelper.GetAsync<bool>("notifications-enabled"));
 #endif
-        var preferredCurrency = await LocalStorage.GetItemAsStringAsync("preferredCurrency");
-        if (preferredCurrency is not null)
-        {
-            PreferredCurrency = preferredCurrency;
-        }
+        PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString();
         
         var host = await SecureStorageHelper.GetAsync<string>("host");
         if (host != "http://127.0.0.1:3201")
@@ -429,12 +425,12 @@ public partial class Settings : ComponentBase, IDisposable
         await base.OnInitializedAsync();
     }
 
-    public async Task HandlePreferredCurrencySubmitAsync(string currencyCode)
+    public void HandlePreferredCurrencySubmitAsync(string currencyCode)
     {
         if (string.IsNullOrEmpty(currencyCode))
             return;
 
-        await LocalStorage.SetItemAsStringAsync("preferredCurrency", currencyCode);
+        AppPreferences.Set(AppPreferences.PreferredCurrency, Enum.Parse<Currency>(currencyCode));
         PreferredCurrency = currencyCode;
     }
 
