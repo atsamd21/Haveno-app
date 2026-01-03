@@ -69,6 +69,11 @@
         <label>Amount in @(SelectedCurrencyCode) to @(Direction == "BUY" ? "spend" : "receive")</label>
         <input type="number" @bind="FiatPrice" @onblur="@(() => Calculate(FiatPrice, "FiatPrice"))" />
 
+        <label>Extra info</label>
+        <textarea @bind="ExtraInfo"></textarea>
+
+        <br />
+
         @if (UseMinimumSecurityDeposit)
         {
             <label>Minimum security deposit is used</label>

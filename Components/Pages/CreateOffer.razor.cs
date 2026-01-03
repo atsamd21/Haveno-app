@@ -189,6 +189,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
     public ulong RequiredFunds { get; set; }
     public ulong TradeFee { get; set; }
     public decimal TradeFeeFiat { get; set; }
+    public string? ExtraInfo { get; set; }
 
     public void Clear()
     {
@@ -534,6 +535,11 @@ public partial class CreateOffer : ComponentBase, IDisposable
                 UseMarketBasedPrice = true,
                 BuyerAsTakerWithoutDeposit = BuyerAsTakerWithoutDeposit
             };
+
+            if (!string.IsNullOrEmpty(ExtraInfo))
+            {
+                request.ExtraInfo = ExtraInfo;
+            }
 
             if (BuyerAsTakerWithoutDeposit)
                 request.IsPrivateOffer = true;

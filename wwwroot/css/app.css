@@ -202,10 +202,13 @@ ul {
 }
 
 input {
+  height: 40px;
+}
+
+input, textarea {
   outline: none;
   border: none;
   border-radius: 20px;
-  height: 40px;
   border: 1px solid #414141;
   background-color: #121212;
   font: inherit;
@@ -213,8 +216,14 @@ input {
   width: 100%;
   color: #fff;
 }
-input:read-only {
+input:read-only, textarea:read-only {
   opacity: 0.5;
+}
+
+textarea {
+  padding-top: 6px;
+  height: 80px;
+  padding-right: 16px;
 }
 
 input[type=checkbox]:read-only {
