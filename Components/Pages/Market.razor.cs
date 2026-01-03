@@ -124,10 +124,6 @@ public partial class Market : ComponentBase, IDisposable
 
                 await BalanceSingleton.InitializedTCS.Task;
 
-                PreferredCurrency = await LocalStorage.GetItemAsStringAsync("preferredCurrency") ?? CurrencyCultureInfo.FallbackCurrency;
-
-                ShowNotice = !AppPreferences.Get<bool>(AppPreferences.InitialNoticeAcknowledged);
-
                 try
                 {
                     CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
@@ -148,8 +144,10 @@ public partial class Market : ComponentBase, IDisposable
             await Task.Delay(5_000);
         }
 
+        PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString() ?? CurrencyCultureInfo.FallbackCurrency;
+        ShowNotice = !AppPreferences.Get<bool>(AppPreferences.InitialNoticeAcknowledged);
+
         TradeStatistics = TradeStatisticsSingleton.TradeStatistics;
-        
         ProcessTradeStatistics();
 
         WalletInfo = BalanceSingleton.WalletInfo;
