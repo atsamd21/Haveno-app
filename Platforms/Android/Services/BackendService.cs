@@ -167,34 +167,41 @@ public class BackendService : Service
 
                     for (int i = 0; i < line.Length; i++)
                     {
-                        if (line[i] == '%')
+                        UpdateProgress(line);
+
+                        if (line.Contains("100%"))
                         {
-                            StringBuilder stringBuilder = new();
-                            for (int j = i - 1; j > 0; j--)
-                            {
-                                if (line[j] > '9' || line[j] < '0')
-                                    break;
-
-                                stringBuilder.Append(line[j]);
-                            }
-
-                            if (stringBuilder.Length > 0)
-                            {
-                                var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
-
-                                if (percentage > lastPercentage)
-                                {
-                                    lastPercentage = percentage;
-
-                                    UpdateProgress($"Tor bootstrapping: {percentage}%");
-
-                                    if (percentage == 100)
-                                    {
-                                        _torReadyTCS.SetResult();
-                                    }
-                                }
-                            }
+                            _torReadyTCS.SetResult();
                         }
+
+                        //if (line[i] == '%')
+                        //{
+                        //    StringBuilder stringBuilder = new();
+                        //    for (int j = i - 1; j > 0; j--)
+                        //    {
+                        //        if (line[j] > '9' || line[j] < '0')
+                        //            break;
+
+                        //        stringBuilder.Append(line[j]);
+                        //    }
+
+                        //    if (stringBuilder.Length > 0)
+                        //    {
+                        //        var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
+
+                        //        if (percentage > lastPercentage)
+                        //        {
+                        //            lastPercentage = percentage;
+
+                        //            UpdateProgress($"Tor bootstrapping: {percentage}%");
+
+                        //            if (percentage == 100)
+                        //            {
+                        //                _torReadyTCS.SetResult();
+                        //            }
+                        //        }
+                        //    }
+                        //}
                     }
                 }
             }
