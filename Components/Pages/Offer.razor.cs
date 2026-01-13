@@ -51,8 +51,8 @@ public partial class Offer : ComponentBase, IDisposable
             {
                 if (OfferInfo.PaymentMethodId != "BLOCK_CHAINS")
                 {
-                    var roundedFiatAmount = Math.Round(decimal.Parse(OfferInfo.Price) * value);
-                    field = Math.Round(roundedFiatAmount / decimal.Parse(OfferInfo.Price), 4);
+                    var roundedFiatAmount = Math.Round(decimal.Parse(OfferInfo.Price, CultureInfo.InvariantCulture) * value);
+                    field = Math.Round(roundedFiatAmount / decimal.Parse(OfferInfo.Price, CultureInfo.InvariantCulture), 4);
                 }
                 else
                 {
@@ -175,8 +175,8 @@ public partial class Offer : ComponentBase, IDisposable
 
             if (OfferInfo.PaymentMethodId != "BLOCK_CHAINS")
             {
-                var roundedFiatAmount = Math.Round(decimal.Parse(OfferInfo.Price) * OfferInfo.Amount.ToMonero());
-                MoneroAmount = Math.Round(roundedFiatAmount / decimal.Parse(OfferInfo.Price), 4);
+                var roundedFiatAmount = Math.Round(decimal.Parse(OfferInfo.Price, CultureInfo.InvariantCulture) * OfferInfo.Amount.ToMonero());
+                MoneroAmount = Math.Round(roundedFiatAmount / decimal.Parse(OfferInfo.Price, CultureInfo.InvariantCulture), 4);
             }
             else
             {
