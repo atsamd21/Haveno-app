@@ -77,12 +77,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <JavaMaximumHeapSize>4G</JavaMaximumHeapSize>
-    <AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
     <JavaMaximumHeapSize>4G</JavaMaximumHeapSize>
-    <AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
   </PropertyGroup>
 
   <ItemGroup>

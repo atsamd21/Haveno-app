@@ -68,13 +68,11 @@ jobs:
           encodedString: ${{ secrets.keystore }}
 
       - name: Publish APK
-        run: dotnet publish ${{inputs.project-file}} -c ${{ inputs.build-config }} -f ${{ inputs.dotnet-version-target }}-android /p:AndroidPackageFormats=apk /p:AndroidCreatePackagePerAbi=true /p:AndroidKeyStore=true /p:AndroidSigningKeyStore=havenoapp.keystore /p:AndroidSigningKeyAlias=${{secrets.keystore-alias}} /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}" /p:AndroidSigningStorePass="${{ secrets.keystore-password }}" /p:JavaMaximumHeapSize=4G --no-restore
+        run: dotnet publish ${{inputs.project-file}} -c ${{ inputs.build-config }} -f ${{ inputs.dotnet-version-target }}-android /p:AndroidPackageFormats=apk /p:AndroidKeyStore=true /p:AndroidSigningKeyStore=havenoapp.keystore /p:AndroidSigningKeyAlias=${{secrets.keystore-alias}} /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}" /p:AndroidSigningStorePass="${{ secrets.keystore-password }}" /p:JavaMaximumHeapSize=4G --no-restore
 
       - name: Rename APK
         run: |
-            mv "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/${APP_ID}-x86_64-Signed.apk" "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-x86_64.apk"
-            mv "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/${APP_ID}-arm64-v8a-Signed.apk" "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-arm64-v8a.apk"
-            mv "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/${APP_ID}-armeabi-v7a-Signed.apk" "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-armeabi-v7a.apk"
+            mv "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/${APP_ID}-Signed.apk" "${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno.apk"
         shell: bash
 
       - name: Upload APK
@@ -82,15 +80,11 @@ jobs:
         with:
             name: android-apk
             path: | 
-                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-x86_64.apk
-                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-arm64-v8a.apk
-                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-armeabi-v7a.apk
+                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno.apk
 
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
             files: |
-                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-x86_64.apk
-                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-arm64-v8a.apk
-                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno-armeabi-v7a.apk
+                ${{ inputs.project-folder }}/bin/${{ inputs.build-config }}/${{ inputs.dotnet-version-target }}-android/publish/haveno.apk
