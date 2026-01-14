@@ -157,52 +157,55 @@ public class BackendService : Service
             {
                 using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
 
+                StringBuilder stringBuilder = new();
                 string? line;
                 while ((line = streamReader.ReadLine()) is not null)
                 {
 #if DEBUG
                     Console.WriteLine(line);
 #endif
-                    int lastPercentage = 0;
+                    stringBuilder.Append(line + "\n");
+                    //int lastPercentage = 0;
+                    UpdateProgress(stringBuilder.ToString());
 
-                    for (int i = 0; i < line.Length; i++)
+                    if (line.Contains("100%"))
                     {
-                        UpdateProgress(line);
-
-                        if (line.Contains("100%"))
-                        {
-                            _torReadyTCS.SetResult();
-                        }
-
-                        //if (line[i] == '%')
-                        //{
-                        //    StringBuilder stringBuilder = new();
-                        //    for (int j = i - 1; j > 0; j--)
-                        //    {
-                        //        if (line[j] > '9' || line[j] < '0')
-                        //            break;
-
-                        //        stringBuilder.Append(line[j]);
-                        //    }
-
-                        //    if (stringBuilder.Length > 0)
-                        //    {
-                        //        var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
-
-                        //        if (percentage > lastPercentage)
-                        //        {
-                        //            lastPercentage = percentage;
-
-                        //            UpdateProgress($"Tor bootstrapping: {percentage}%");
-
-                        //            if (percentage == 100)
-                        //            {
-                        //                _torReadyTCS.SetResult();
-                        //            }
-                        //        }
-                        //    }
-                        //}
+                        _torReadyTCS.SetResult();
                     }
+
+                    //for (int i = 0; i < line.Length; i++)
+                    //{
+
+
+                    //    //if (line[i] == '%')
+                    //    //{
+                    //    //    StringBuilder stringBuilder = new();
+                    //    //    for (int j = i - 1; j > 0; j--)
+                    //    //    {
+                    //    //        if (line[j] > '9' || line[j] < '0')
+                    //    //            break;
+
+                    //    //        stringBuilder.Append(line[j]);
+                    //    //    }
+
+                    //    //    if (stringBuilder.Length > 0)
+                    //    //    {
+                    //    //        var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
+
+                    //    //        if (percentage > lastPercentage)
+                    //    //        {
+                    //    //            lastPercentage = percentage;
+
+                    //    //            UpdateProgress($"Tor bootstrapping: {percentage}%");
+
+                    //    //            if (percentage == 100)
+                    //    //            {
+                    //    //                _torReadyTCS.SetResult();
+                    //    //            }
+                    //    //        }
+                    //    //    }
+                    //    //}
+                    //}
                 }
             }
             catch (Exception e)

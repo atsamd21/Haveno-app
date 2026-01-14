@@ -61,7 +61,7 @@
 </Modal>
 <Modal IsOpen="IsDaemonStartInfoModalOpen || DaemonStartInfo != string.Empty" Title="Initializing" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">
     <p class="regular-p-grey init-text-top">Haveno is starting, please wait</p>
-    <div class="loader-text-container">
+    <div class="loader-text-container" style="overflow-y: scroll;">
         <span class="loader"></span>
         <p class="regular-p-grey init-text">@DaemonStartInfo</p>
     </div>

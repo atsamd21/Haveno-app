@@ -17,6 +17,7 @@ public static class Proot
             "-0",
             "-b", $"{ProotGlobals.TmpDir}:/tmp",
             "-b", $"{ProotGlobals.HomeDir}:/home",
+            "-w", "/",
             "-b", "/dev",
             "-b", "/proc",
             "-b", "/sys",

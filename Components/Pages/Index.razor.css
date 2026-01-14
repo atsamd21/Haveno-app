@@ -38,6 +38,8 @@
 }
 .loader-text-container {
   display: flex;
+  overflow-y: scroll;
+  height: 500px;
 }
 
 .init-text-top {
