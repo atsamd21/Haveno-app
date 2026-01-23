@@ -2,10 +2,12 @@
 
 @if (CurrentException is not null)
 {
-    <Modal Title="Error" @bind-IsOpen="IsOpen" ModalButtonOptions="ModalButtonOptions.NONE">
-        <p>@Message</p>
-        <br />
-        <button class="button-grey copy" @onclick="@(async () => await Clipboard.Default.SetTextAsync(Message))">Copy error</button>
-    </Modal>
+    <div style="z-index: 10000;">
+        <Modal Title="Error" @bind-IsOpen="IsOpen" ModalButtonOptions="ModalButtonOptions.NONE">
+            <p>@Message</p>
+            <br />
+            <button class="button-grey copy" @onclick="@(async () => await Clipboard.Default.SetTextAsync(Message))">Copy error</button>
+        </Modal>
+    </div>
 }
 @ChildContent
