@@ -19,12 +19,9 @@
 
     protected override void OnInitialized()
     {
+        // Hack. When errorhandler rerenders this rerenders
+        HandleLocationChanged(null, null);
         NavigationManager.LocationChanged += HandleLocationChanged;
-    }
-
-    private void HandleHeaderChanged(string title)
-    {
-        _headerTitle = title;
     }
 
     private async Task GoBack()
