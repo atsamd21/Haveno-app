@@ -35,20 +35,25 @@
     <button class="button-cancel" @onclick="Cancel">Cancel</button>
 </div>
 
-<Modal IsOpen="IsTakingOffer" Title="Taking offer" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">
+<div>
+    <Modal @bind-IsOpen="IsTakingOffer" Title="Taking offer" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">
     <p class="regular-p-grey">Please wait</p>
+        <div class="timeout-wrapper">
+            <div class=@($"timeout {(AnimateTimeout ? "zero" : "")}")></div>
+        </div>
 </Modal>
+</div>
+
 <Modal IsCloseable="false" Title="No payment account" IsOpen="UserDoesNotHaveAccount" ModalButtonOptions="ModalButtonOptions.OK_CANCEL" CancelButtonText="Go back" OkButtonText="Create account" OnOkPressed="@NavigateToAccount" OnCancelPressed="@(() => NavigationManager.NavigateTo("BuySell"))">
     <p class="regular-p-grey">@AccountErrorMessage</p>
 </Modal>
 <Modal 
     Title="Offer info" 
-    IsOpen="ShowExtraInfoModal"
+    @bind-IsOpen="ShowExtraInfoModal"
     ModalButtonOptions="ModalButtonOptions.OK_CANCEL" 
     CancelButtonText="Close" 
     OkButtonText="Confirm"
     IsCloseable="false"
-    OnOkPressed="() => ShowExtraInfoModal = false" 
     OnCancelPressed="@(() => NavigationManager.NavigateTo("buysell"))">
     <div style="max-height: 60vh;overflow-y: auto;">
         <p class="regular-p-grey">Please review the maker's terms and conditions.</p>
@@ -62,4 +67,7 @@
 </Modal>
 <Modal Title="Enter offer passphrase" @bind-IsOpen="ShowPassphraseModal" ModalButtonOptions="ModalButtonOptions.OK_CANCEL" OkButtonText="Confirm" OnOkPressed="@TakeOfferAsync">
     <input class="passphrase-input" type="text" @bind="Passphrase" placeholder="" />
+</Modal>
+<Modal IsCloseable="false" Title="Offer error" IsOpen="OfferError" ModalButtonOptions="ModalButtonOptions.OK" OkButtonText="Go back" OnOkPressed="@Cancel">
+    <p class="regular-p-grey">@OfferErrorMessage</p>
 </Modal>

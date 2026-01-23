@@ -1,4 +1,6 @@
-﻿using HavenoSharp.Models;
+﻿using Grpc.Core;
+using HavenoSharp.Extensions;
+using HavenoSharp.Models;
 using HavenoSharp.Models.Requests;
 using HavenoSharp.Services;
 using Manta.Helpers;
@@ -115,7 +117,10 @@ public partial class Offer : ComponentBase, IDisposable
     public Dictionary<string, string> PaymentAccounts { get; set; } = [];
 
     public bool IsTakingOffer { get; set; }
+    public bool AnimateTimeout { get; set; }
     public bool UserDoesNotHaveAccount { get; set; }
+    public bool OfferError { get; set; }
+    public string? OfferErrorMessage { get; set; }
     public ulong RequiredFunds { get; set; }
     public string? AccountToCreate { get; set; }
     public string? AccountErrorMessage { get; set; }
@@ -135,15 +140,24 @@ public partial class Offer : ComponentBase, IDisposable
     {
         try
         {
-            OfferInfo = await OfferService.GetOfferAsync(OfferId);
+            try
+            {
+                OfferInfo = await OfferService.GetOfferAsync(OfferId);
+            }
+            catch (RpcException e)
+            {
+                OfferError = true;
+                OfferErrorMessage = $"{e.GetErrorMessage()}";
+                return;
+            }
 
             ShowExtraInfoModal = !string.IsNullOrEmpty(OfferInfo.ExtraInfo);
 
             var paymentAccounts = await PaymentAccountService.GetPaymentAccountsAsync();
 
-            List<PaymentAccount> sameTypePaymentAccounts = [];
-
-            sameTypePaymentAccounts = paymentAccounts.Where(x => x.PaymentMethod.Id == OfferInfo.PaymentMethodId).ToList();
+            var sameTypePaymentAccounts = paymentAccounts
+                .Where(x => x.PaymentMethod.Id == OfferInfo.PaymentMethodId)
+                .ToList();
 
             if (sameTypePaymentAccounts.Count == 0)
             {
@@ -153,10 +167,9 @@ public partial class Offer : ComponentBase, IDisposable
                 return;
             }
 
-            var currencyCode = OfferInfo.CounterCurrencyCode;
-
             sameTypePaymentAccounts = sameTypePaymentAccounts
-                .Where(x => x.TradeCurrencies.Select(x => x.Code).Contains(currencyCode)).ToList();
+                .Where(x => x.TradeCurrencies.Select(x => x.Code).Contains(OfferInfo.CounterCurrencyCode))
+                .ToList();
 
             SelectedPaymentAccountId = sameTypePaymentAccounts
                 .FirstOrDefault(x => x.PaymentMethod.Id == OfferInfo.PaymentMethodId)?.Id ?? string.Empty;
@@ -164,7 +177,7 @@ public partial class Offer : ComponentBase, IDisposable
             if (string.IsNullOrEmpty(SelectedPaymentAccountId))
             {
                 UserDoesNotHaveAccount = true;
-                AccountErrorMessage = $"You do not have a {OfferInfo.PaymentMethodShortName} account that supports this currency ({currencyCode}).";
+                AccountErrorMessage = $"You do not have a {OfferInfo.PaymentMethodShortName} account that supports this currency ({OfferInfo.CounterCurrencyCode}).";
                 AccountToCreate = OfferInfo.PaymentMethodId;
                 return;
             }
@@ -230,6 +243,8 @@ public partial class Offer : ComponentBase, IDisposable
         ShowPassphraseModal = false;
         IsTakingOffer = true;
 
+        await InvokeAsync(() => AnimateTimeout = true);
+
         try
         {
             var takeOfferRequest = new TakeOfferRequest
@@ -257,6 +272,7 @@ public partial class Offer : ComponentBase, IDisposable
         finally
         {
             IsTakingOffer = false;
+            AnimateTimeout = false;
         }
     }
 

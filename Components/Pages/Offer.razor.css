@@ -55,3 +55,22 @@ button, .slider-container {
 .no-deposit img {
   margin-right: 6px;
 }
+
+::deep .timeout-wrapper {
+  width: 100%;
+  background-color: #eaeaea;
+  border-radius: 100px;
+}
+
+::deep .timeout {
+  width: 100%;
+  height: 6px;
+  background-color: #0CB952;
+  transition: width 180s linear;
+  border-radius: 100px;
+  margin-top: 10px;
+}
+
+::deep .zero {
+  width: 0;
+}
