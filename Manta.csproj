@@ -25,7 +25,7 @@
     <!-- CHANGE THESE -->
     <ApplicationTitle>Haveno</ApplicationTitle>
     <ApplicationId>com.haveno</ApplicationId>
-    <DaemonUrl>https://github.com/atsamd21/haveno/releases/download/v1.2.2</DaemonUrl>
+    <DaemonUrl>https://github.com/atsamd21/haveno/releases/download/v1.2.3</DaemonUrl>
     <Network>XMR_STAGENET</Network>
     <HavenoAppName>haveno-dev</HavenoAppName>
     <!-- CHANGE THESE -->
