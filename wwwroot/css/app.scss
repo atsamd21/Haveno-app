@@ -235,8 +235,10 @@ input, textarea {
 
 textarea {
     padding-top: 6px;
+    min-height: 80px;
     height: 80px;
     padding-right: 16px;
+    resize: none;
 }
 
 input[type=checkbox]:read-only {
