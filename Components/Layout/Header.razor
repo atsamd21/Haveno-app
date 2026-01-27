@@ -29,7 +29,7 @@
         await JS.InvokeVoidAsync("history.back");
     }
 
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
     {
         IsMenuOpen = false;
 
@@ -41,11 +41,14 @@
         }
         else
         {
-            _headerTitle = e.Location.Replace(NavigationManager.BaseUri, "");
-
-            if (_headerTitle == "buysell")
+            if (e is not null)
             {
-                _headerTitle = "Buy & Sell";
+                _headerTitle = e.Location.Replace(NavigationManager.BaseUri, "");
+
+                if (_headerTitle == "buysell")
+                {
+                    _headerTitle = "Buy & Sell";
+                }
             }
         }
 
