@@ -123,7 +123,11 @@ public partial class CreateOffer : ComponentBase, IDisposable
 
             if (Direction == "BUY")
             {
-                TradeFee = (ulong)(piconeroAmount * AppConstants.MakerFeePct);
+                if (IsFiat)
+                    TradeFee = (ulong)(piconeroAmount * AppConstants.MakerFeePctTraditional);
+                else
+                    TradeFee = (ulong)(piconeroAmount * AppConstants.MakerFeePctCrypto);
+
                 ulong securityDepositAmount = (ulong)(piconeroAmount * (SecurityDepositPct / 100));
 
                 if (securityDepositAmount < _minSecurityDepositAmount)
@@ -140,7 +144,12 @@ public partial class CreateOffer : ComponentBase, IDisposable
             }
             else
             {
-                var tradeFeePct = BuyerAsTakerWithoutDeposit ? (AppConstants.MakerFeePct + AppConstants.TakerFeePct) : AppConstants.MakerFeePct;
+                double tradeFeePct;
+                
+                if (IsFiat)
+                    tradeFeePct = BuyerAsTakerWithoutDeposit ? (AppConstants.MakerFeePctTraditional + AppConstants.TakerFeePctTraditional) : AppConstants.MakerFeePctTraditional;
+                else
+                    tradeFeePct = BuyerAsTakerWithoutDeposit ? (AppConstants.MakerFeePctCrypto + AppConstants.TakerFeePctCrypto) : AppConstants.MakerFeePctCrypto;
 
                 TradeFee = (ulong)(piconeroAmount * tradeFeePct);
                 ulong depositAmount = (ulong)(piconeroAmount * (SecurityDepositPct / 100));
@@ -183,6 +192,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
         }
     }
 
+    public bool ShowFeeInfoModal { get; set; }
     public bool IsFetching { get; set; }
     public bool IsConfirmModalOpen { get; set; }
 

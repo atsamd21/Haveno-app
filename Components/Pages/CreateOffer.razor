@@ -1,6 +1,19 @@
 ﻿<div class="create-offer-main">
     <p class="bold-p margin">Create offer</p>
 
+    <Modal Title="Fee info" IsCloseable="true" ModalButtonOptions="ModalButtonOptions.OK" @bind-IsOpen="ShowFeeInfoModal">
+        @if (IsFiat)
+        {
+            <p class="regular-p-grey">Maker fee: @AppConstants.MakerFeePctTraditional%</p>
+            <p class="regular-p-grey">Taker fee: @AppConstants.TakerFeePctTraditional%</p>
+        }
+        else
+        {
+            <p class="regular-p-grey">Maker fee (crypto): @AppConstants.MakerFeePctCrypto%</p>
+            <p class="regular-p-grey">Taker fee (crypto): @AppConstants.TakerFeePctCrypto%</p>
+        }
+        <p class="regular-p-grey">Penalty fee: @AppConstants.PenaltyFeePct%</p>
+    </Modal>
     <Modal Title="Creating offer" IsCloseable="false" ModalButtonOptions="ModalButtonOptions.NONE" @bind-IsOpen="IsFetching">
         <p class="regular-p-grey">Please wait</p>
     </Modal>
@@ -85,7 +98,11 @@
             <input readonly="@BuyerAsTakerWithoutDeposit" type="number" @bind="SecurityDepositPct" />            
         }
 
-        <InfoRow Label="Trade fee" Value="@($"{TradeFee.ToMonero()} XMR (~{TradeFeeFiat} {SelectedCurrencyCode})")"></InfoRow>
+        <div class="trade-fee-container" >
+            <label>Trade fee</label>
+            <img src="icons/info.svg" class="info" @onclick="() => ShowFeeInfoModal = true" />
+        </div>
+        <InfoRow Value="@($"{TradeFee.ToMonero()} XMR (~{TradeFeeFiat} {SelectedCurrencyCode})")"></InfoRow>
         <InfoRow Label="Required funds" Value=@(RequiredFunds.ToMonero() + " XMR")></InfoRow>
 
         @if (Direction == "SELL")

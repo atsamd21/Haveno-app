@@ -35,3 +35,16 @@
 .price-toggle {
     margin-bottom: 10px;
 }
+
+.trade-fee-container {
+    display: flex;
+    font-weight: 500;
+    align-items: flex-end;
+
+    img {
+        filter: invert(1) !important;
+        height: 18px;
+        margin-left: 6px;
+        margin-bottom: 3px;
+    }
+}

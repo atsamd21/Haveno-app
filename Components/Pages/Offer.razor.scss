@@ -78,3 +78,16 @@ button, .slider-container {
 ::deep .zero {
     width: 0;
 }
+
+.required-funds-container {
+    display: flex;
+    font-weight: 500;
+    align-items: flex-end;
+
+    img {
+        filter: invert(1) !important;
+        height: 18px;
+        margin-left: 6px;
+        margin-bottom: 3px;
+    }
+}

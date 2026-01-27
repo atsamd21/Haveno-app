@@ -19,7 +19,14 @@
 
     <div class="funding-section">
         <InfoRow Label="Available funds" Value="@(AvailableBalance.ToMonero() + " XMR")"></InfoRow>
-        <InfoRow Label="Required funds" Value="@(RequiredFunds.ToMonero() + " XMR")"></InfoRow>
+        @if (OfferInfo?.BuyerSecurityDepositPct != 0)
+        {
+            <div class="required-funds-container" >
+                <label>Required funds</label>
+                    <img src="icons/info.svg" class="info" @onclick="() => ShowFeeInfoModal = true" />
+            </div>
+            <InfoRow Value="@(RequiredFunds.ToMonero() + " XMR")"></InfoRow>
+        }
         @if (OfferInfo?.BuyerSecurityDepositPct == 0)
         {
             <div class="no-deposit">
@@ -37,18 +44,18 @@
 
 <div>
     <Modal @bind-IsOpen="IsTakingOffer" Title="Taking offer" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">
-    <p class="regular-p-grey">Please wait</p>
+        <p class="regular-p-grey">Timeout in 180s</p>
         <div class="timeout-wrapper">
             <div class=@($"timeout {(AnimateTimeout ? "zero" : "")}")></div>
         </div>
-</Modal>
+    </Modal>
 </div>
 
 <Modal IsCloseable="false" Title="No payment account" IsOpen="UserDoesNotHaveAccount" ModalButtonOptions="ModalButtonOptions.OK_CANCEL" CancelButtonText="Go back" OkButtonText="Create account" OnOkPressed="@NavigateToAccount" OnCancelPressed="@(() => NavigationManager.NavigateTo("BuySell"))">
     <p class="regular-p-grey">@AccountErrorMessage</p>
 </Modal>
 <Modal 
-    Title="Offer info" 
+    Title="Offer info"
     @bind-IsOpen="ShowExtraInfoModal"
     ModalButtonOptions="ModalButtonOptions.OK_CANCEL" 
     CancelButtonText="Close" 
@@ -70,4 +77,11 @@
 </Modal>
 <Modal IsCloseable="false" Title="Offer error" IsOpen="OfferError" ModalButtonOptions="ModalButtonOptions.OK" OkButtonText="Go back" OnOkPressed="@Cancel">
     <p class="regular-p-grey">@OfferErrorMessage</p>
+</Modal>
+<Modal Title="Fee info" IsCloseable="true" ModalButtonOptions="ModalButtonOptions.OK" @bind-IsOpen="ShowFeeInfoModal">
+    <p class="regular-p-grey">Security deposit: @SecurityDepositAmount XMR / @Math.Round(SecurityDepositPercentage * 100, 2)% of trade amount</p>
+    <p class="regular-p-grey">Trade fee: @TakerFeeAmount XMR / @((IsFiat ? AppConstants.TakerFeePctTraditional : AppConstants.TakerFeePctCrypto) * 100)% of trade amount</p>
+    <p class="regular-p-grey">Total: @RequiredFunds.ToMonero() XMR</p>
+    <br />
+    <p class="regular-p-grey">Penalty fee: @AppConstants.PenaltyFeePct%</p>
 </Modal>

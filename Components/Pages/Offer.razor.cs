@@ -30,6 +30,12 @@ public partial class Offer : ComponentBase, IDisposable
 
     public bool ShowExtraInfoModal { get; set; }
     public bool ShowPassphraseModal { get; set; }
+    public bool ShowFeeInfoModal { get; set; }
+    public bool IsFiat { get; set; }
+
+    public decimal TakerFeeAmount { get; set; }
+    public decimal SecurityDepositAmount { get; set; }
+    public double SecurityDepositPercentage { get; set; }
 
     public string Passphrase { get; set { field = value.Trim(); } } = string.Empty;
 
@@ -77,6 +83,9 @@ public partial class Offer : ComponentBase, IDisposable
                     }
 
                     RequiredFunds = _piconeroAmount + transactionFee + depositAmount + takerFee;
+                    TakerFeeAmount = takerFee.ToMonero();
+                    SecurityDepositAmount = depositAmount.ToMonero();
+                    SecurityDepositPercentage = depositAmount / (double)_piconeroAmount;
                 }
                 else
                 {
@@ -89,6 +98,9 @@ public partial class Offer : ComponentBase, IDisposable
                     }
 
                     RequiredFunds = transactionFee + depositAmount + takerFee;
+                    TakerFeeAmount = takerFee.ToMonero();
+                    SecurityDepositAmount = depositAmount.ToMonero();
+                    SecurityDepositPercentage = depositAmount / (double)_piconeroAmount;
                 }
             }
 
@@ -151,6 +163,7 @@ public partial class Offer : ComponentBase, IDisposable
                 return;
             }
 
+            IsFiat = OfferInfo.PaymentMethodId != "BLOCK_CHAINS";
             ShowExtraInfoModal = !string.IsNullOrEmpty(OfferInfo.ExtraInfo);
 
             var paymentAccounts = await PaymentAccountService.GetPaymentAccountsAsync();
