@@ -82,6 +82,6 @@
     <p class="regular-p-grey">Security deposit: @SecurityDepositAmount XMR / @Math.Round(SecurityDepositPercentage * 100, 2)% of trade amount</p>
     <p class="regular-p-grey">Trade fee: @TakerFeeAmount XMR / @((IsFiat ? AppConstants.TakerFeePctTraditional : AppConstants.TakerFeePctCrypto) * 100)% of trade amount</p>
     <p class="regular-p-grey">Total: @RequiredFunds.ToMonero() XMR</p>
-    <br />
-    <p class="regular-p-grey">Penalty fee: @AppConstants.PenaltyFeePct%</p>
+    @* <br /> *@
+    @* <p class="regular-p-grey">Penalty fee: @AppConstants.PenaltyFeePct%</p> *@
 </Modal>
