@@ -44,6 +44,12 @@
                 <p class="regular-p-grey">Updating Haveno @($"{InstallProgress:F0}%")</p>
             </div>
             break;
+        case DaemonSetupState.UpdatingRootfs:
+            <div class="loader-text-container">
+                <span class="loader"></span>
+                <p class="regular-p-grey">Updating dependencies @($"{InstallProgress:F0}%")</p>
+            </div>
+            break;
         default: break;
     }
 </Modal>
@@ -53,7 +59,6 @@
     ModalButtonOptions="ModalButtonOptions.CANCEL"
     OnCancelPressed="@(() => { IsInstallTypeModalOpen = true; InstallationErrorMessage = null; })"
     CancelButtonText="Close">
-    @* needs a copy btn*@
     <div class="installation-error" style="max-height: 60vh;overflow-y: auto;">
         <p class="installation-error-text">@InstallationErrorMessage</p>
         <button class="button-grey" @onclick="@(async () => await Clipboard.Default.SetTextAsync(InstallationErrorMessage))">Copy error</button>
@@ -69,4 +74,18 @@
     {
         <button class="button-submit" @onclick="@(() => NavigationManager.NavigateTo("/Market"))">Skip initialization</button>
     }
+</Modal>
+<Modal 
+    IsOpen="UpdateErrorMessage is not null" 
+    Title="Update error"
+    ModalButtonOptions="ModalButtonOptions.OK_CANCEL"
+    OnCancelPressed="@(async () => { UpdateErrorMessage = null; await StartHaveno(); })"
+    OnOkPressed="@(() => { UpdateErrorMessage = null; NavigationManager.NavigateTo("/", true); })"
+    OkButtonText="Retry"
+    CancelButtonText="Skip update">
+    <div class="installation-error" style="max-height: 60vh;overflow-y: auto;">
+        <p class="regular-p-grey">An error occurred whilst updating. You can retry or temporarily skip to access your account. Update will retry on next app start.</p>
+        <br />
+        <p class="installation-error-text">@UpdateErrorMessage</p>
+    </div>
 </Modal>

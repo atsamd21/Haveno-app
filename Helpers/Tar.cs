@@ -4,6 +4,24 @@ using System.IO.Compression;
 
 namespace Manta.Helpers;
 
+public class TarExtractorException : Exception
+{
+    public TarExtractorException()
+    {
+
+    }
+
+    public TarExtractorException(string? message) : base(message)
+    {
+
+    }
+
+    public TarExtractorException(string? message, Exception? innerException) : base(message, innerException)
+    {
+
+    }
+}
+
 public class Tar
 {
     //public static async Task ExtractBz2Async(Stream bz2TarStream, string installPath)
@@ -20,45 +38,52 @@ public class Tar
 
     public static async Task ExtractAsync(Stream tarStream, string installPath)
     {
-        using var tarReader = new TarReader(tarStream);
-
-        TarEntry? entry;
-        while ((entry = await tarReader.GetNextEntryAsync()) is not null)
+        try
         {
-            string destinationPath = Path.Combine(installPath, entry.Name);
-            string? parentDirectory = Path.GetDirectoryName(destinationPath);
+            using var tarReader = new TarReader(tarStream);
 
-            if (entry.EntryType == TarEntryType.Directory)
+            TarEntry? entry;
+            while ((entry = await tarReader.GetNextEntryAsync()) is not null)
             {
-                Directory.CreateDirectory(destinationPath);
-                File.SetUnixFileMode(destinationPath, entry.Mode);
-            }
-            else if (entry.EntryType == TarEntryType.SymbolicLink)
-            {
-                if (!string.IsNullOrEmpty(parentDirectory) && !Directory.Exists(parentDirectory))
-                {
-                    Directory.CreateDirectory(parentDirectory);
-                    File.SetUnixFileMode(parentDirectory, entry.Mode);
-                }
+                string destinationPath = Path.Combine(installPath, entry.Name);
+                string? parentDirectory = Path.GetDirectoryName(destinationPath);
 
-                File.CreateSymbolicLink(destinationPath, entry.LinkName);
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(parentDirectory) && !Directory.Exists(parentDirectory))
+                if (entry.EntryType == TarEntryType.Directory)
                 {
-                    Directory.CreateDirectory(parentDirectory);
-                    File.SetUnixFileMode(parentDirectory, entry.Mode);
-                }
-
-                if (entry.DataStream is not null)
-                {
-                    using var fs = new FileStream(destinationPath, FileMode.Create, FileAccess.Write);
-                    await entry.DataStream.CopyToAsync(fs);
-
+                    Directory.CreateDirectory(destinationPath);
                     File.SetUnixFileMode(destinationPath, entry.Mode);
                 }
+                else if (entry.EntryType == TarEntryType.SymbolicLink)
+                {
+                    if (!string.IsNullOrEmpty(parentDirectory) && !Directory.Exists(parentDirectory))
+                    {
+                        Directory.CreateDirectory(parentDirectory);
+                        File.SetUnixFileMode(parentDirectory, entry.Mode);
+                    }
+
+                    File.CreateSymbolicLink(destinationPath, entry.LinkName);
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(parentDirectory) && !Directory.Exists(parentDirectory))
+                    {
+                        Directory.CreateDirectory(parentDirectory);
+                        File.SetUnixFileMode(parentDirectory, entry.Mode);
+                    }
+
+                    if (entry.DataStream is not null)
+                    {
+                        using var fs = new FileStream(destinationPath, FileMode.Create, FileAccess.Write);
+                        await entry.DataStream.CopyToAsync(fs);
+
+                        File.SetUnixFileMode(destinationPath, entry.Mode);
+                    }
+                }
             }
+        }
+        catch (Exception e)
+        {
+            throw new TarExtractorException($"Error extracting: {e.Message}");
         }
     }
 }

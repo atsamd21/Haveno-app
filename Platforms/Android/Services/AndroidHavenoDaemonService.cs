@@ -70,16 +70,20 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
     public override async Task TryUpdateHavenoAsync(IProgress<double> progressCb)
     {
-        var rootfsVersion = RootfsInstaller.GetInstalledVersion();
-        
-        if (rootfsVersion is null || RootfsInstaller.RootfsVersion > RootfsInstaller.GetInstalledVersion())
+        await Task.Run(async () =>
         {
-            // Reinstall as nothing is saved to the rootfs anyway
-            await RootfsInstaller.InstallAsync(progressCb);
-        }
+            // Checks for ROOTFS update and updates if available
+            var rootfsVersion = RootfsInstaller.GetInstalledVersion();
+            if (rootfsVersion is null || RootfsInstaller.LatestRootfsVersion > RootfsInstaller.GetInstalledVersion())
+            {
+                // Reinstall as nothing is saved to the rootfs anyway
+                await RootfsInstaller.InstallAsync(progressCb);
+            }
 
-        await base.TryUpdateHavenoAsync(progressCb);
-        Proot.RunProotUbuntuCommand("chmod", "+x", Path.Combine(_daemonPath, "daemon.jar"));
+            // Checks for DAEMON update and updates if available
+            await base.TryUpdateHavenoAsync(progressCb);
+            Proot.RunProotUbuntuCommand("chmod", "+x", Path.Combine(_daemonPath, "daemon.jar"));
+        });
     }
 
     public override async Task<(bool, string)> GetIsDaemonInstalledAsync()

@@ -6,6 +6,7 @@ public enum DaemonSetupState
     InstallingDependencies,
     ExtractingRootfs,
     InstallingDaemon,
+    UpdatingRootfs,
     UpdatingDaemon,
     Finished
 }

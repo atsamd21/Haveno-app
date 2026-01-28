@@ -3,16 +3,34 @@ using Manta.Helpers;
 
 namespace Manta.Services;
 
+public class RootfsInstallationException : Exception
+{
+    public RootfsInstallationException()
+    {
+
+    }
+
+    public RootfsInstallationException(string? message) : base(message)
+    {
+
+    }
+
+    public RootfsInstallationException(string? message, Exception? innerException) : base(message, innerException) 
+    {
+
+    }
+}
+
 public static class RootfsInstaller
 {
     private static readonly string _ubuntuDownloadUrl;
 
-    public static string RootfsVersionString { get; } = "1.0.7";
-    public static Version RootfsVersion { get { return Version.Parse(RootfsVersionString); } }
+    public static string LatestRootfsVersionString { get; } = "1.0.7";
+    public static Version LatestRootfsVersion { get { return Version.Parse(LatestRootfsVersionString); } }
 
     static RootfsInstaller()
     {
-        _ubuntuDownloadUrl = $"https://github.com/atsamd21/rootfs/releases/download/v{RootfsVersionString}/ubuntu-base-{RuntimeInformationExtensions.GetOsArchitectureFullName()}.tar.gz";
+        _ubuntuDownloadUrl = $"https://github.com/atsamd21/rootfs/releases/download/v{LatestRootfsVersionString}/ubuntu-base-{RuntimeInformationExtensions.GetOsArchitectureFullName()}.tar.gz";
     }
 
     public static async Task InstallAsync(IProgress<double> progressCb)
@@ -41,21 +59,16 @@ public static class RootfsInstaller
             await Tar.ExtractGzAsync(stream, ProotGlobals.RootfsDir);
 
             // Set current installed version
-            AppPreferences.Set(AppPreferences.RootfsVersion, RootfsVersionString);
+            AppPreferences.Set(AppPreferences.RootfsVersion, LatestRootfsVersionString);
+        }
+        catch (TarExtractorException e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-
-            try
-            {
-                DeleteRootfs();
-            }
-            catch
-            {
-
-            }
-
             throw;
         }
     }

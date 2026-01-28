@@ -19,6 +19,7 @@ public partial class Index : ComponentBase
     public double InstallProgress { get; set; }
     public bool IsDaemonStartInfoModalOpen { get; set; }
     public string? InstallationErrorMessage { get; set; }
+    public string? UpdateErrorMessage { get; set; }
 
     [Inject]
     public ILocalStorageService LocalStorage { get; set; } = default!;
@@ -172,28 +173,38 @@ public partial class Index : ComponentBase
                     {
                         var progressCb = new Progress<double>(progress =>
                         {
-                            if (DaemonSetupState != DaemonSetupState.UpdatingDaemon)
+                            if (DaemonSetupState == DaemonSetupState.Initial)
                             {
                                 InstallProgress = 0;
-                                DaemonSetupState = DaemonSetupState.UpdatingDaemon;
+                                DaemonSetupState = DaemonSetupState.UpdatingRootfs;
                             }
 
-                            InstallProgress = progress;
+                            if (progress == 101f)
+                            {
+                                DaemonSetupState = DaemonSetupState.ExtractingRootfs;
+                                InstallProgress = 0f;
+                            }
+                            else if (progress == 102f)
+                            {
+                                DaemonSetupState = DaemonSetupState.UpdatingDaemon;
+                                InstallProgress = 0f;
+                            }
+                            else
+                            {
+                                InstallProgress = progress;
+                            }
+
                             StateHasChanged();
                         });
 
-                        await HavenoDaemonService.TryUpdateHavenoAsync(progressCb);
-
-                        var host = await SecureStorageHelper.GetAsync<string>("host");
-                        var password = await SecureStorageHelper.GetAsync<string>("password");
-
-                        if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(password))
+                        try
                         {
-
+                            await HavenoDaemonService.TryUpdateHavenoAsync(progressCb);
                         }
-                        else
+                        catch (Exception e)
                         {
-                            GrpcChannelSingleton.CreateChannel(host, password);
+                            UpdateErrorMessage = e.Message;
+                            return;
                         }
 
                         await StartHaveno();
