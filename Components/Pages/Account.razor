@@ -244,8 +244,8 @@
                             }
                             <div class="field">
                                 <label>@field.Label</label>
-                                <InputText placeholder="" @bind-Value="field.Value"></InputText>
-                                <ValidationMessage For="() => field.Label" />
+                                <InputText placeholder="" @bind-Value="field.Value" ></InputText>
+                                <ValidationMessage For="() => field.Value" />
                             </div>  
                         }
                         break;
@@ -254,7 +254,7 @@
             <div class="field">
                 <InfoRow Label="Limitations" Value="@($"Max {((ulong)MaxTradeLimit).ToMonero()} XMR / Max trade duration: {TimeHelper.FormatDuration(MaxTradePeriod)}")"></InfoRow>
             </div>
-            <button type="submit">Save new account</button>
+            <button type="submit" disabled="@SubmitButtonDisabled">Save new account</button>
         </EditForm>
     }
 </div>

@@ -19,6 +19,8 @@ public partial class Account : ComponentBase
     private ValidationMessageStore? _messageStore;
     private EditContext? _editContext;
 
+    public bool SubmitButtonDisabled { get; set; } = true;
+
     public PaymentAccountForm? PaymentAccountForm { get; set; }
     public CreateCryptoCurrencyPaymentAccountRequest? CreateCryptoCurrencyPaymentAccountRequest { get; set; }
     public PaymentAccount? SelectedPaymentAccount { get; set; }
@@ -226,36 +228,37 @@ public partial class Account : ComponentBase
         PaymentMethodSearchableDropdown.Clear();
     }
 
-    public void ValidateModel(object? sender, FieldChangedEventArgs e)
+    public async void ValidateModel(object? sender, FieldChangedEventArgs e)
     {
         if (sender is null || _messageStore is null || _editContext is null)
             return;
 
-        _messageStore.Clear();
-
         if (e.FieldIdentifier.Model is not PaymentAccountFormField field || PaymentAccountForm is null)
             return;
 
-        try
+        var errorMessage = await PaymentAccountService.ValidateFormFieldAsync(new ValidateFormFieldRequest
         {
-            Task.Run(() => PaymentAccountService.ValidateFormFieldAsync(new ValidateFormFieldRequest
-            {
-                FieldId = field.Id,
-                Form = PaymentAccountForm,
-                Value = field.Value
-            })).GetAwaiter().GetResult();
-        }
-        catch (RpcException ex)
+            FieldId = field.Id,
+            Form = PaymentAccountForm,
+            Value = field.Value
+        });
+
+        _messageStore.Clear(() => field.Value);
+
+        if (!string.IsNullOrEmpty(errorMessage))
         {
-            _messageStore.Add(() => field.Label, ex.GetErrorMessage());
+            _messageStore.Add(() => field.Value, errorMessage);
         }
+
+        SubmitButtonDisabled = !_editContext.Validate();
+        _editContext.NotifyValidationStateChanged();
 
         if (!CustomAccountNameEnabled && AccountNameField is not null && CopyFromField is not null && field.Id == CopyFromField.Id)
         {
             AccountNameField.Value = $"{TraditionalPaymentMethodStrings[SelectedPaymentMethodId]}: {CopyFromField.Value}";
         }
 
-        _editContext.NotifyValidationStateChanged();
+        StateHasChanged();
     }
 
     public void HandleCryptoAddressChange()
