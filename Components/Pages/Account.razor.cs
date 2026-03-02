@@ -145,6 +145,7 @@ public partial class Account : ComponentBase
                 return FieldId.USERNAME;
             case "SEPA":
             case "SEPA_INSTANT":
+                return FieldId.IBAN;
             case "ZELLE":
                 return FieldId.EMAIL_OR_MOBILE_NR;
             case "SWIFT":
