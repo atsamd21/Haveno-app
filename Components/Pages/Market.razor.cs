@@ -1,5 +1,4 @@
-﻿using Blazored.LocalStorage;
-using HavenoSharp.Models;
+﻿using HavenoSharp.Models;
 using Manta.Helpers;
 using Manta.Models;
 using Manta.Singletons;
@@ -69,8 +68,6 @@ public partial class Market : ComponentBase, IDisposable
 
     public bool ShowNotice { get; set; }
 
-    [Inject]
-    public ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject]
     public IJSRuntime JS { get; set; } = default!;
     [Inject]

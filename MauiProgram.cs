@@ -1,5 +1,4 @@
-﻿using Blazored.LocalStorage;
-using Manta.Helpers;
+﻿using Manta.Helpers;
 using Manta.Singletons;
 using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui;
@@ -31,7 +30,6 @@ public static class MauiProgram
         });
 
         builder.Services.AddMudServices();
-        builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddSingleton<DaemonInfoSingleton>();
         builder.Services.AddSingleton<BalanceSingleton>();
         builder.Services.AddSingleton<NotificationSingleton>();
@@ -52,7 +50,9 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();
 #endif
-
+#if ANDROID
+        Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
+#endif
         return builder.Build();
     }
 }

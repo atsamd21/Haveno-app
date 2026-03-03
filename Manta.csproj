@@ -1,14 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
-    <!-- Note for MacCatalyst:
-            The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
-            When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
-            The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
-            either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
-    <!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+    <TargetFrameworks>net10.0-android;net9.0-android</TargetFrameworks>
 
     <OutputType>Exe</OutputType>
     <RootNamespace>Manta</RootNamespace>
@@ -165,12 +158,11 @@
     <Content Include="Components\Pages\BuySell.razor.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
     <PackageReference Include="CommunityToolkit.Maui" Version="14.0.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageReference Include="Grpc.Net.Client.Web" Version="2.76.0" />
-    <PackageReference Include="HavenoSharp" Version="1.1.4" />
+    <PackageReference Include="HavenoSharp" Version="1.1.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="10.3.0" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.40" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="10.0.40" />
@@ -179,6 +171,21 @@
     <PackageReference Include="MudBlazor" Version="8.15.0" />
     <PackageReference Include="ZXing.Net.Maui" Version="0.7.4" />
     <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.7.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
+    <PackageReference Include="CommunityToolkit.Maui" Version="12.3.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageReference Include="Grpc.Net.Client.Web" Version="2.76.0" />
+    <PackageReference Include="HavenoSharp" Version="1.1.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="9.10.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.120" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.120" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.13" />
+    <PackageReference Include="MudBlazor" Version="8.15.0" />
+    <PackageReference Include="ZXing.Net.Maui" Version="0.6.0" />
+    <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>

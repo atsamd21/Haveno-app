@@ -1,4 +1,3 @@
-﻿using Blazored.LocalStorage;
 using HavenoSharp.Services;
 using HavenoSharp.Singletons;
 using Manta.Helpers;
@@ -21,8 +20,6 @@ public partial class Index : ComponentBase
     public string? InstallationErrorMessage { get; set; }
     public string? UpdateErrorMessage { get; set; }
 
-    [Inject]
-    public ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject]
     public NavigationManager NavigationManager { get; set; } = default!;
     [Inject]
