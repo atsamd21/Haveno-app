@@ -25,16 +25,17 @@ public partial class Wallet : ComponentBase, IDisposable
     public decimal PendingFiat { get; set; }
     public decimal AvailableFiat { get; set; }
 
-    public string Memo { get; set; } = string.Empty;
     public string WithdrawalAddress { get; set; } = string.Empty;
 
     public bool VerifyModalIsOpen { get; set; }
     public bool CreatingTxModalIsOpen { get; set; }
+    public bool WithdrawalSuccessfulModalIsOpen { get; set; }
 
+    public List<string> TxIds { get; set; } = [];
     public string WalletSeed { get; set; } = string.Empty;
     public bool ShowWalletSeed { get; set; }
 
-    public XmrTx? Transaction { get; set; }
+    public List<XmrTx> WithdrawalTransactions { get; set; } = [];
 
     private ulong _piconeroAmount;
     public decimal Amount
@@ -152,14 +153,25 @@ public partial class Wallet : ComponentBase, IDisposable
         {
             CreatingTxModalIsOpen = true;
 
-            var request = new CreateXmrTxRequest();
-            request.Destinations.Add(new XmrDestination
-            {
-                Address = WithdrawalAddress,
-                Amount = _piconeroAmount.ToString()
-            });
+            WithdrawalTransactions.Clear();
 
-            Transaction = await WalletService.CreateXmrTxAsync(request);
+            if (_piconeroAmount == Balance.AvailableXMRBalance)
+            {
+                var txs = await WalletService.CreateXmrSweepTxsAsync(WithdrawalAddress);
+                WithdrawalTransactions.AddRange(txs);
+            }
+            else
+            {
+                var request = new CreateXmrTxRequest();
+                request.Destinations.Add(new XmrDestination
+                {
+                    Address = WithdrawalAddress,
+                    Amount = _piconeroAmount.ToString()
+                });
+
+                var tx = await WalletService.CreateXmrTxAsync(request);
+                WithdrawalTransactions.Add(tx);
+            }
 
             CreatingTxModalIsOpen = false;
             VerifyModalIsOpen = true;
@@ -182,16 +194,18 @@ public partial class Wallet : ComponentBase, IDisposable
 
     public async Task WithdrawAsync()
     {
-        if (Transaction is null)
+        if (WithdrawalTransactions.Count == 0)
             return;
 
-        var response = await WalletService.RelayXmrTxsAsync([Transaction.Metadata]);
+        var txIds = await WalletService
+            .RelayXmrTxsAsync([.. WithdrawalTransactions.Select(x => x.Metadata)]);
 
+        TxIds = txIds;
         Amount = 0;
         WithdrawalAddress = string.Empty;
-        Memo = string.Empty;
+        WithdrawalTransactions.Clear();
 
-        // Subtract amount here?
+        WithdrawalSuccessfulModalIsOpen = true;
     }
 
     public void Dispose()

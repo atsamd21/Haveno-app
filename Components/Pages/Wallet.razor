@@ -1,10 +1,20 @@
 ﻿@page "/wallet"
 
+<Modal @bind-IsOpen="@WithdrawalSuccessfulModalIsOpen" Title="Withdrawal successful" ModalButtonOptions="ModalButtonOptions.OK" IsCloseable="true">
+    <p class="bold-p">Transaction ids</p>
+    <ul class="txids">
+        @for (int i = 0; i < TxIds.Count; i++)
+        {
+            int iCopy = i;
+            <li @onclick="async () => await Clipboard.Default.SetTextAsync(TxIds[iCopy])" class="regular-p-grey txid">(@(i + 1)) @TxIds[i]</li>
+        }
+    </ul>
+</Modal>
 <Modal @bind-IsOpen="@VerifyModalIsOpen" Title="Verify withdrawal" OnOkPressed="WithdrawAsync" OkButtonText="Withdraw">
     <div class="modal-content regular-p-grey">
         <p>Sending @Amount XMR</p>
         <p class="withdrawal-address">To address: @WithdrawalAddress</p>
-        <p>Fee: @(ulong.Parse(Transaction?.Fee ?? "0", CultureInfo.InvariantCulture).ToMonero()) XMR</p>
+        <p>Fee: @(WithdrawalTransactions.Aggregate(ulong.MinValue, (x, y) => ulong.Parse(y.Fee) + x).ToMonero()) XMR</p>
     </div>
 </Modal>
 <Modal @bind-IsOpen="@CreatingTxModalIsOpen" Title="Creating transaction" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">
@@ -22,14 +32,17 @@
                 <p class="wallet-title">Monero Wallet</p>
             </div>
             <div class="monero-card-bottom">
-                <div class="monero-card-bottom-available">
-                    <p class="wallet-balance-fiat">@(AvailableFiat.ToString("C", PreferredCurrencyFormat))</p>
-                    <p class="wallet-pending-balance-fiat">@(PendingFiat.ToString("C", PreferredCurrencyFormat)) pending</p>
-                </div>
+                @if (BalanceSingleton.MarketPriceInfoDictionary.TryGetValue(PreferredCurrency, out var _))
+                {
+                    <div class="monero-card-bottom-available">
+                        <p class="wallet-balance-fiat">@(AvailableFiat.ToString("C", PreferredCurrencyFormat))</p>
+                        <p class="wallet-pending-balance-fiat">@(PendingFiat.ToString("C", PreferredCurrencyFormat)) pending</p>
+                    </div>
+                }
                 <div class="monero-card-bottom-pending">
-                    <p class="wallet-balance-crypto">XMR @((Balance?.AvailableXMRBalance ?? 0).ToMonero().ToString("0.0000")) </p>
-                    <p class="wallet-pending-balance-crypto">XMR @((Balance?.PendingXMRBalance ?? 0).ToMonero().ToString("0.0000")) pending</p>
-                    <p class="wallet-reserved-balance-crypto">XMR @(((Balance?.ReservedTradeBalance ?? 0) + (Balance?.ReservedOfferBalance ?? 0)).ToMonero().ToString("0.0000")) reserved</p>
+                    <p class="wallet-balance-crypto">XMR @((Balance?.AvailableXMRBalance ?? 0).ToMonero().ToString("0.0000########")) </p>
+                    <p class="wallet-pending-balance-crypto">XMR @((Balance?.PendingXMRBalance ?? 0).ToMonero().ToString("0.0000########")) pending</p>
+                    <p class="wallet-reserved-balance-crypto">XMR @(((Balance?.ReservedTradeBalance ?? 0) + (Balance?.ReservedOfferBalance ?? 0)).ToMonero().ToString("0.0000########")) reserved</p>
                 </div>
             </div>
         </div>
@@ -77,10 +90,8 @@
                     <label for="amount">Amount</label>
                     <div class="amount-container">
                         <input id="amount" name="amount" type="number" @bind="Amount" />
-                        @* <p class="send-all" @onclick="() => _piconeroAmount = Balance.AvailableXMRBalance">Send all</p> *@
+                        <p class="send-all" @onclick="() => _piconeroAmount = Balance.AvailableXMRBalance">Send max</p>
                     </div>
-@*                     <label for="memo">Memo</label>
-                    <input id="memo" name="memo" @bind="Memo" placeholder="Optional" /> *@
                     <button @onclick="CreateTransaction" disabled="@(string.IsNullOrEmpty(WithdrawalAddress) || Amount == 0m || WithdrawalAddress.Length != 95)">Withdraw</button>                    
                 }
             </div>

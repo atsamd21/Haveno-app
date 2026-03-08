@@ -161,19 +161,21 @@
         display: flex;
 
         input {
-            /*           border-end-end-radius: 0;
-            border-start-end-radius: 0;*/
+            border-end-end-radius: 0;
+            border-start-end-radius: 0;
         }
 
         .send-all {
             display: flex;
             align-items: center;
-            background-color: #d3d3d3;
-            padding: 4px 8px 4px;
+            background-color: #121212;
+            border: 1px solid #414141;
+            border-left: none;
+            padding: 4px 12px 4px;
             width: fit-content;
-            border-end-end-radius: 8px;
-            border-start-end-radius: 8px;
-            color: #000;
+            border-end-end-radius: 100px;
+            border-start-end-radius: 100px;
+            color: #fff;
             margin-bottom: 10px;
             white-space: nowrap;
         }
@@ -188,5 +190,20 @@
 
     .withdrawal-address {
         line-break: anywhere;
+    }
+}
+
+.txids {
+    overflow-y: scroll;
+    max-height: 60dvh;
+
+    .txid {
+        line-break: anywhere;
+        margin-bottom: 10px;
+        text-decoration: underline;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 }
