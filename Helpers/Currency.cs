@@ -188,7 +188,12 @@ public static class CryptoCurrencyHelper
         { "DAI-ERC20", "Dai Stablecoin (ERC20)" },
         { "USDT-ERC20", "Tether USD (ERC20)" },
         { "USDT-TRC20", "Tether USD (TRC20)" },
-        { "USDC-ERC20", "USD Coin (ERC20)" }
+        { "USDC-ERC20", "USD Coin (ERC20)" },
+        { "ADA", "Cardano" },
+        { "DOGE", "Dogecoin" },
+        { "XRP", "Ripple" },
+        { "SOL", "Solana" },
+        { "TRX", "Tron" }
     };
 }
 
