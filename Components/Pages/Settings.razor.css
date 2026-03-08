@@ -57,3 +57,29 @@
 .url {
   white-space: nowrap;
 }
+
+.support-links-container .support-links-title {
+  /*margin-bottom: 10px;*/
+}
+
+.link-container {
+  display: flex;
+  margin-bottom: 6px;
+}
+.link-container img {
+  height: 18px;
+  filter: invert(1);
+  margin-right: 8px;
+}
+.link-container a {
+  line-height: 18px;
+  text-decoration: underline;
+  color: #fff;
+}
+
+::deep .external-link {
+  line-height: 12px;
+  font-size: 12px;
+  text-decoration: underline;
+  color: #000;
+}

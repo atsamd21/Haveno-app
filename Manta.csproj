@@ -18,6 +18,9 @@
     <DaemonUrl>https://github.com/atsamd21/haveno/releases/download/v1.2.3.1</DaemonUrl>
     <Network>XMR_STAGENET</Network>
     <HavenoAppName>haveno-dev</HavenoAppName>
+    <SimplexLink>https://smp4.simplex.im/g#hr4lvFeBmndWMKTwqiodPz3VBo_6UmdGWocXd1SupsM</SimplexLink>
+    <MatrixLink>https://matrix.to/#/#haveno:monero.social</MatrixLink>
+    <GitHubLink>https://github.com/atsamd21/Haveno-app</GitHubLink>
     <!-- CHANGE THESE -->
 
     <!-- Versions -->
@@ -56,6 +59,21 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
       <_Parameter1>DaemonUrl</_Parameter1>
       <_Parameter2>$(DaemonUrl)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>SimplexLink</_Parameter1>
+      <_Parameter2>$(SimplexLink)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>MatrixLink</_Parameter1>
+      <_Parameter2>$(MatrixLink)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>GitHubLink</_Parameter1>
+      <_Parameter2>$(GitHubLink)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
   

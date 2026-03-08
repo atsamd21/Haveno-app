@@ -1,5 +1,12 @@
 ﻿@page "/settings"
 
+<div>
+    <Modal Title="Confirm" ModalButtonOptions="ModalButtonOptions.CANCEL" @bind-IsOpen="ShowConfirmLinkModal">
+        <p class="regular-p-grey">Are you sure you want to open this link?</p>
+        <a @onclick="@(() => { ShowConfirmLinkModal = false; NavigationManager.NavigateTo(LinkToOpen!); })" class="external-link">Url: @LinkToOpen</a>
+    </Modal>
+</div>
+
 <Modal Title="Backup" ModalButtonOptions="ModalButtonOptions.CANCEL" @bind-IsOpen="IsBackingUp" OnCancelPressed="() => { try{ BackupCts?.Cancel(); } catch{} }" IsCloseable="false">
     <p class="regular-p-grey">Please wait</p>
     <p class="regular-p-grey">Note: This can take a long time when using a remote node</p>
@@ -48,6 +55,32 @@
         <p>App version: @(string.IsNullOrEmpty(Version) ? "Loading..." : Version)</p>
         <p>Haveno version: @(string.IsNullOrEmpty(HavenoVersion) ? "Loading..." : HavenoVersion)</p>
         <p>Daemon status: @(IsConnected ? "Connected" : "Disconnected")</p>
+        <br />
+        <div class="support-links-container">
+            <p class="bold-p support-links-title">Support links</p>
+
+            @if (!string.IsNullOrEmpty(AppConstants.GitHubLink))
+            {
+                <div class="link-container">
+                    <img src="icons/github.svg" />
+                    <a @onclick="() => { LinkToOpen = AppConstants.GitHubLink; ShowConfirmLinkModal = true; }">Source code</a>
+                </div>
+            }
+@*             @if (!string.IsNullOrEmpty(AppConstants.MatrixLink))
+            {
+                <div class="link-container">
+                    <img src="icons/matrix.svg" />
+                    <a href="@AppConstants.GitHubLink">Matrix</a>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(AppConstants.SimplexLink))
+            {
+                <div class="link-container">
+                    <img src="icons/simplex.svg" />
+                    <a href="@AppConstants.SimplexLink">Simplex</a>
+                </div>
+            } *@
+        </div>
         <br />
         <p class="bold-p">Monero node</p>
         @if (DaemonInstallOption == DaemonInstallOptions.RemoteNode)

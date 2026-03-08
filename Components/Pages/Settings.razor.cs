@@ -7,8 +7,6 @@ using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
 using Grpc.Net.Client.Web;
 using Manta.Services;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace Manta.Components.Pages;
 
@@ -45,6 +43,8 @@ public partial class Settings : ComponentBase, IDisposable
     public bool IsFetching { get; set; }
     public bool IsBackingUp { get; set; }
     public bool ShowConnectToRemoteNodeModal { get; set; }
+    public bool ShowConfirmLinkModal { get; set; }
+    public string? LinkToOpen { get; set; }
 
     public bool IsNotificationsToggled { get; set; }
     public bool IsWakeLockToggled { get; set; }
