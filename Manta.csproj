@@ -180,7 +180,7 @@
     <PackageReference Include="CommunityToolkit.Maui" Version="14.0.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageReference Include="Grpc.Net.Client.Web" Version="2.76.0" />
-    <PackageReference Include="HavenoSharp" Version="1.1.6" />
+    <PackageReference Include="HavenoSharp" Version="1.1.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="10.3.0" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.40" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="10.0.40" />
@@ -195,7 +195,7 @@
     <PackageReference Include="CommunityToolkit.Maui" Version="12.3.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageReference Include="Grpc.Net.Client.Web" Version="2.76.0" />
-    <PackageReference Include="HavenoSharp" Version="1.1.6" />
+    <PackageReference Include="HavenoSharp" Version="1.1.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="9.10.0" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.120" />
