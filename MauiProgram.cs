@@ -50,9 +50,6 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();
 #endif
-#if ANDROID
-        Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
-#endif
         return builder.Build();
     }
 }
