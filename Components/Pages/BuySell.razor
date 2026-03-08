@@ -98,7 +98,7 @@
                                         }
                                         else
                                         {
-                                            <p>@offer.PaymentMethodShortName</p>
+                                            <p>@offer.PaymentMethodShortName @(offer.PaymentMethodShortName == "F2F" ? $"({offer.AcceptedCountryCodes.FirstOrDefault() ?? "??"}, {offer.City})" : "")</p>
                                         }
                                     </div>
                                 }
