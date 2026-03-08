@@ -8,6 +8,10 @@ public static class AppConstants
     public static readonly string Network;
     public static readonly string HavenoAppName;
 
+    public static readonly string SimplexLink;
+    public static readonly string GitHubLink;
+    public static readonly string MatrixLink;
+
     public const string ApplicationId = "com.haveno";
     public const double MakerFeePctTraditional = 0.0015;
     public const double TakerFeePctTraditional = 0.0075;
@@ -29,5 +33,17 @@ public static class AppConstants
         DaemonUrl = Assembly.GetExecutingAssembly()
            .GetCustomAttributes<AssemblyMetadataAttribute>()
            .FirstOrDefault(a => a.Key == "DaemonUrl")?.Value ?? string.Empty;
+
+        SimplexLink = Assembly.GetExecutingAssembly()
+           .GetCustomAttributes<AssemblyMetadataAttribute>()
+           .FirstOrDefault(a => a.Key == "SimplexLink")?.Value ?? string.Empty;
+
+        GitHubLink = Assembly.GetExecutingAssembly()
+           .GetCustomAttributes<AssemblyMetadataAttribute>()
+           .FirstOrDefault(a => a.Key == "GitHubLink")?.Value ?? string.Empty;
+
+        MatrixLink = Assembly.GetExecutingAssembly()
+           .GetCustomAttributes<AssemblyMetadataAttribute>()
+           .FirstOrDefault(a => a.Key == "MatrixLink")?.Value ?? string.Empty;
     }
 }
