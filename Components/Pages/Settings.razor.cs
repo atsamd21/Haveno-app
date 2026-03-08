@@ -40,6 +40,9 @@ public partial class Settings : ComponentBase, IDisposable
     [Inject]
     public IHavenoXmrNodeService HavenoXmrNodeService { get; set; } = default!;
 
+    public CancellationTokenSource? MoneroNodeConnectCancellationTokenSource;
+    public bool IsConnectingToMoneroNode { get; set; }
+
     public bool IsFetching { get; set; }
     public bool IsBackingUp { get; set; }
     public bool ShowConnectToRemoteNodeModal { get; set; }
@@ -225,22 +228,70 @@ public partial class Settings : ComponentBase, IDisposable
         if (MoneroNodeUrl is null)
             return;
 
-        MoneroNodeUsername ??= string.Empty;
-        MoneroNodePassword ??= string.Empty;
+        MoneroNodeConnectCancellationTokenSource = new(10_000);
+        IsConnectingToMoneroNode = true;
 
-        // Does not throw an exception if fails?
-        await HavenoXmrNodeService.SetAutoSwitchAsync(false);
-        await HavenoXmrNodeService.SetMoneroNodeAsync(MoneroNodeUrl, MoneroNodeUsername, MoneroNodePassword, 0);
+        try
+        {
+            MoneroNodeUsername ??= string.Empty;
+            MoneroNodePassword ??= string.Empty;
 
-        var response = await HavenoXmrNodeService.GetMoneroNodeAsync();
-        ConnectedMoneroNodeUrl = response.Url;
+            // Does not throw an exception if fails?
+            await HavenoXmrNodeService.SetAutoSwitchAsync(false);
+            await HavenoXmrNodeService.SetMoneroNodeAsync(MoneroNodeUrl, MoneroNodeUsername, MoneroNodePassword, 0);
 
-        AppPreferences.Set(AppPreferences.CustomXmrNode, ConnectedMoneroNodeUrl);
+            var response = await HavenoXmrNodeService.GetMoneroNodeAsync();
+            ConnectedMoneroNodeUrl = response.Url;
 
-        ShowConnectToMoneroNodeModal = false;
-        MoneroNodeUrl = string.Empty;
-        MoneroNodeUsername = string.Empty;
-        MoneroNodePassword = string.Empty;
+            while (!MoneroNodeConnectCancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    response = await HavenoXmrNodeService.GetMoneroNodeAsync(MoneroNodeConnectCancellationTokenSource.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
+                if (response.OnlineStatus == HavenoSharp.Models.OnlineStatus.ONLINE)
+                    break;
+
+                await Task.Delay(500);
+            }
+
+            if (MoneroNodeConnectCancellationTokenSource.IsCancellationRequested)
+            {
+                await HavenoXmrNodeService.SetAutoSwitchAsync(true);
+                await HavenoXmrNodeService.RemoveConnectionAsync(MoneroNodeUrl);
+
+                var moneroNodes = await HavenoXmrNodeService.GetConnectionsAsync();
+                var previousAuthedNode = moneroNodes.FirstOrDefault(x => x.AuthenticationStatus == HavenoSharp.Models.AuthenticationStatus.AUTHENTICATED && x.OnlineStatus == HavenoSharp.Models.OnlineStatus.ONLINE);
+
+                if (previousAuthedNode is not null) // Hope that previous node did not require auth
+                    await HavenoXmrNodeService.SetMoneroNodeAsync(previousAuthedNode.Url, string.Empty, string.Empty, 0);
+
+                response = await HavenoXmrNodeService.GetMoneroNodeAsync();
+                ConnectedMoneroNodeUrl = response.Url;
+
+                throw new Exception("Failed to connect to node.");
+            }
+            else
+            {
+                AppPreferences.Set(AppPreferences.CustomXmrNode, ConnectedMoneroNodeUrl);
+            }
+        }
+        finally
+        {
+            ShowConnectToMoneroNodeModal = false;
+            MoneroNodeUrl = string.Empty;
+            MoneroNodeUsername = string.Empty;
+            MoneroNodePassword = string.Empty;
+
+            MoneroNodeConnectCancellationTokenSource.Dispose();
+            MoneroNodeConnectCancellationTokenSource = null;
+            IsConnectingToMoneroNode = false;
+        }
     }
 
     public async Task CancelConnectToRemoteNodeAsync()

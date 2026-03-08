@@ -7,6 +7,10 @@
     </Modal>
 </div>
 
+<Modal Title="Connecting to node" ModalButtonOptions="ModalButtonOptions.CANCEL" @bind-IsOpen="IsConnectingToMoneroNode" OnCancelPressed="() => { MoneroNodeConnectCancellationTokenSource?.Cancel(); }" IsCloseable="false">
+    <p class="regular-p-grey">Please wait</p>
+</Modal>
+
 <Modal Title="Backup" ModalButtonOptions="ModalButtonOptions.CANCEL" @bind-IsOpen="IsBackingUp" OnCancelPressed="() => { try{ BackupCts?.Cancel(); } catch{} }" IsCloseable="false">
     <p class="regular-p-grey">Please wait</p>
     <p class="regular-p-grey">Note: This can take a long time when using a remote node</p>
