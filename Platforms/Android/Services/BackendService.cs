@@ -155,6 +155,22 @@ public class BackendService : Service
 
             try
             {
+                // Check if tor running
+                using var tcpClient = new TcpClient("127.0.0.1", 9060);
+                // Try to kill
+                var result = Proot.RunProotUbuntuCommand("pkill", "-f", "-9", "tor");
+            }
+            catch { }
+
+            try
+            {
+                using var tcpClient = new TcpClient("127.0.0.1", 9061);
+                var result = Proot.RunProotUbuntuCommand("pkill", "-f", "-9", "tor");
+            }
+            catch { }
+
+            try
+            {
                 using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
 
                 string? line;
