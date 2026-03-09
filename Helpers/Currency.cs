@@ -174,7 +174,12 @@ public enum CryptoCurrency
     DAI_ERC20,
     USDT_ERC20,
     USDT_TRC20,
-    USDC_ERC20
+    USDC_ERC20,
+    ADA, 
+    DOGE, 
+    XRP, 
+    SOL, 
+    TRX
 }
 
 public static class CryptoCurrencyHelper
