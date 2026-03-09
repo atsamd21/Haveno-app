@@ -1,5 +1,6 @@
 ﻿using HavenoSharp.Models;
 using HavenoSharp.Services;
+using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
 
 namespace Manta.Components.Pages;
@@ -10,6 +11,8 @@ public partial class MyOffers : ComponentBase
     public IHavenoOfferService OfferService { get; set; } = default!;
     [Inject]
     public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject]
+    public BalanceSingleton BalanceSingleton { get; set; } = default!;
     public List<OfferInfo> Offers { get; set; } = [];
 
     public OfferInfo? OfferInfo { get; set; }
