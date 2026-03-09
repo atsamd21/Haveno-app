@@ -135,31 +135,17 @@
             }
             <div class="amount-price-info">
                 <div class="price-info">
-                    @if (TradeInfo.Offer.BaseCurrencyCode == "XMR")
-                    {
-                        @(TradeInfo.Offer.Direction == "SELL" ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode)
-                        <img src="icons/arrow-right.svg" />
-                        @(TradeInfo.Offer.Direction == "SELL" ? TradeInfo.Offer.BaseCurrencyCode : TradeInfo.Offer.CounterCurrencyCode)
-                    }
-                    else
-                    {
-                        @*                @(TradeInfo.Offer.Direction == "SELL" ? "XMR" : TradeInfo.Offer.BaseCurrencyCode)
-                        <img src="icons/arrow-right.svg" />
-                        @(TradeInfo.Offer.Direction == "SELL" ? TradeInfo.Offer.BaseCurrencyCode : "XMR") *@
-                    }
+                    @(TradeInfo.Offer.Direction == "SELL" ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode)
+                    <img src="icons/arrow-right.svg" />
+                    @(TradeInfo.Offer.Direction == "SELL" ? TradeInfo.Offer.BaseCurrencyCode : TradeInfo.Offer.CounterCurrencyCode)
                 </div>
                 <div class="amount-info">
-                    @if (TradeInfo.Offer.BaseCurrencyCode == "XMR")
-                    {
-                        <p>Amount: @TradeInfo.Amount.ToMonero() @(IsFiat ? "XMR" : TradeInfo.Offer.BaseCurrencyCode) / @TradeInfo.TradeVolume @TradeInfo.Offer.CounterCurrencyCode</p>
-                        <p>Price: @decimal.Parse(TradeInfo.Price, CultureInfo.InvariantCulture).ToString("0.0000") @TradeInfo.Offer.CounterCurrencyCode</p>
-                    }
-                    else
-                    {
-                        <p>Amount: @TradeInfo.Amount.ToMonero() @(IsFiat ? "XMR" : TradeInfo.Offer.CounterCurrencyCode) / @TradeInfo.TradeVolume @TradeInfo.Offer.BaseCurrencyCode</p>
-                        <p>Price: @decimal.Parse(TradeInfo.Price, CultureInfo.InvariantCulture).ToString("0.0000") @TradeInfo.Offer.CounterCurrencyCode</p>
-                    }
+                    <p>Amount: @TradeInfo.Amount.ToMonero() @(IsFiat ? "XMR" : TradeInfo.Offer.BaseCurrencyCode) / @TradeInfo.TradeVolume @TradeInfo.Offer.CounterCurrencyCode</p>
+                    <p>Price: @decimal.Parse(TradeInfo.Price, CultureInfo.InvariantCulture).ToString(TradeInfo.Offer.PaymentMethodId == "BLOCK_CHAINS" ? "0.0000####" : "0.0000") @TradeInfo.Offer.CounterCurrencyCode</p>
                 </div>
+            </div>
+            <div class="trade-id">
+                <InfoRow IsExpandable="true" Label="Trade ID" Value="@TradeInfo.TradeId"></InfoRow>
             </div>
             @if (!string.IsNullOrEmpty(TradeInfo.TakerDepositTxId))
             {

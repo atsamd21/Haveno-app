@@ -129,3 +129,9 @@
         margin-right: 6px;
     }
 }
+
+::deep .trade-id {
+    .data {
+        white-space: nowrap;
+    }
+}
