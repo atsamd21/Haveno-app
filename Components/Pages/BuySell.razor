@@ -87,7 +87,7 @@
                                     |
                                     @(Math.Round(double.Parse(offer.Price, CultureInfo.InvariantCulture), (offer.PaymentMethodId == "BLOCK_CHAINS" ? 8 : 2)))
                                     @offer.CounterCurrencyCode
-                                    (@(Math.Round(offer.UseMarketBasedPrice ? offer.MarketPriceMarginPct : ((float)BalanceSingleton.GetFixedPricePercentage(offer.CounterCurrencyCode, offer.Price, offer.Direction)), 2).ToString("0.00"))%)
+                                    (@(Math.Round(offer.UseMarketBasedPrice ? (offer.MarketPriceMarginPct * 100) : ((float)BalanceSingleton.GetFixedPricePercentage(offer.CounterCurrencyCode, offer.Price, offer.Direction)), 2).ToString("0.00"))%)
                                 </div>
                                 @if (!offer.IsMyOffer)
                                 {
