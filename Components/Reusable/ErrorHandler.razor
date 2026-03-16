@@ -2,7 +2,7 @@
 
 @if (CurrentException is not null)
 {
-    <div style="z-index: 10000;">
+    <div style="z-index: 10000; word-break: break-word;">
         <Modal Title="Error" @bind-IsOpen="IsOpen" ModalButtonOptions="ModalButtonOptions.NONE">
             <p>@Message</p>
             <br />
