@@ -178,11 +178,14 @@ public partial class Trade : ComponentBase, IDisposable
             case "BUYER_SEND_FAILED_PAYMENT_SENT_MSG":
                 BuyerState = 2;
                 break;
+            case "SELLER_CONFIRMED_PAYMENT_RECEIPT":
+                BuyerState = 3;
+                SellerState = TradeInfo.IsPayoutPublished ? 4 : 3;
+                break;
             case "SELLER_SENT_PAYMENT_RECEIVED_MSG":
                 BuyerState = 4;
                 SellerState = TradeInfo.IsPayoutPublished ? 4 : 3;
                 break;
-            case "SELLER_CONFIRMED_PAYMENT_RECEIPT":
             case "SELLER_SEND_FAILED_PAYMENT_RECEIVED_MSG":
             case "SELLER_STORED_IN_MAILBOX_PAYMENT_RECEIVED_MSG":
             case "SELLER_SAW_ARRIVED_PAYMENT_RECEIVED_MSG":
