@@ -84,7 +84,7 @@
 }
 
 <Modal Title="@("Trade info " + CompletedTradeInfo?.ShortId)" IsOpen="CompletedTradeInfo is not null" ModalButtonOptions="ModalButtonOptions.NONE" IsOpenChanged="@((isOpen) => { if (!isOpen) CompletedTradeInfo = null; })">
-    <div class="regular-p-grey">
+    <div class="regular-p-grey completed-trade">
         <p>Your role: @CompletedTradeInfo?.Role</p>
         <p>XMR amount: @CompletedTradeInfo?.Amount.ToMonero() XMR</p>
         @if (CompletedTradeInfo?.Offer.BaseCurrencyCode == "XMR")
@@ -97,5 +97,9 @@
         }
         <p>Trade price: @Math.Round(decimal.Parse(CompletedTradeInfo?.Price ?? "0", CultureInfo.InvariantCulture), 4)</p>
         <p>Payment method: @CompletedTradeInfo?.Offer.PaymentMethodShortName</p>
+        <br />
+        <InfoRow Label="Maker's deposit transaction ID" Value="@CompletedTradeInfo?.MakerDepositTxId" IsExpandable=true></InfoRow>
+        <InfoRow Label="Taker's deposit transaction ID" Value="@CompletedTradeInfo?.TakerDepositTxId" IsExpandable=true></InfoRow>
+        <InfoRow Label="Payout transaction ID" Value="@CompletedTradeInfo?.PayoutTxId" IsExpandable=true></InfoRow>
     </div>
 </Modal>
