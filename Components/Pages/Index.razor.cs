@@ -86,6 +86,10 @@ public partial class Index : ComponentBase
                     Console.WriteLine(WalletHeight.Height);
                     await InvokeAsync(StateHasChanged);
                 }
+                catch (TaskCanceledException)
+                {
+                    return;
+                }
                 catch (RpcException)
                 {
 
