@@ -18,24 +18,24 @@
         <p class="regular-p-grey">Please wait</p>
     </Modal>
     <Modal Title="Review offer" ModalButtonOptions="ModalButtonOptions.OK_CANCEL" @bind-IsOpen="IsConfirmModalOpen" OnOkPressed="PostOfferAsync" OkButtonText="Post offer">
-        <p class="regular-p-grey">You are creating an offer to @(Direction.ToLower()) XMR</p>
-        @* <br /> *@
-        <p class="regular-p-grey">Min: @MinimumMoneroAmount XMR</p>
-        <p class="regular-p-grey">Max: @MoneroAmount XMR</p>
+        <div class="review-offer">
+            <p class="regular-p-grey">You are creating an offer to @(Direction.ToLower()) XMR</p>
+            @* <br /> *@
+            <p class="regular-p-grey">Min: @MinimumMoneroAmount XMR</p>
+            <p class="regular-p-grey">Max: @MoneroAmount XMR</p>
 
-        @if (Direction == "BUY")
-        {
-            <p class="regular-p-grey">Amount to spend: @FiatPrice @SelectedCurrencyCode</p>
-        }
-        else
-        {
-            <p class="regular-p-grey">Amount to receive: @FiatPrice @SelectedCurrencyCode</p>
-        }
+            @if (Direction == "BUY")
+            {
+                <p class="regular-p-grey">Amount to spend: @FiatPrice @SelectedCurrencyCode</p>
+            }
+            else
+            {
+                <p class="regular-p-grey">Amount to receive: @FiatPrice @SelectedCurrencyCode</p>
+            }
 
-        <p class="regular-p-grey">Price: @FixedPrice (distance from market price: @MarketPriceMarginPct%)</p>
-        <p class="regular-p-grey">My trading account: @PaymentAccounts[SelectedPaymentAccountId]</p>
-        @* <br/> *@
-        @* <p class="regular-p-grey">Security deposit: @</p> *@
+            <p class="regular-p-grey">Price: @FixedPrice (distance from market price: @MarketPriceMarginPct%)</p>
+            <p class="regular-p-grey">My trading account: @PaymentAccounts[SelectedPaymentAccountId]</p>
+        </div>
     </Modal>
 
     @if (PaymentAccounts.Count == 0)
@@ -55,7 +55,14 @@
         <div>
             <label>Amount of XMR to @Direction.ToLower()</label>
             <input class="no-margin" type="number" max="@MaxTradeLimit" @bind="MoneroAmount" @onblur="@(() => Calculate(MoneroAmount, "MoneroAmount"))" placeholder="Enter amount in XMR" />
-            <p class="margin note">Note: max trade limit is @MaxTradeLimit XMR</p>
+            @if (Direction == "SELL" && BuyerAsTakerWithoutDeposit)
+            {
+                <p class="margin note">Note: max trade limit is 1.5 XMR</p>
+            }
+            else
+            {
+                <p class="margin note">Note: max trade limit is @MaxTradeLimit XMR</p>
+            }
 
             <label>Minimum amount of XMR</label>
             <input type="number" @bind="MinimumMoneroAmount" @onblur="@(() => Calculate(MinimumMoneroAmount, "MinimumMoneroAmount"))" placeholder="Enter amount in XMR" />
@@ -69,15 +76,18 @@
 
         <input readonly="@(!UseFixedPrice)" type="number" @bind="FixedPrice" @onblur="@(() => Calculate(FixedPrice, "FixedPrice"))" />
 
-        <label>@(Direction == "BUY" ? "Below" : "Above") % from market price</label>
-        <input readonly="@(UseFixedPrice)" type="number" @bind="MarketPriceMarginPct" @onblur="@(() => Calculate(MarketPriceMarginPct, "MarketPriceMarginPct"))" />
+        @if (!NoMarketPrice)
+        {
+            <label>@(Direction == "BUY" ? "Below" : "Above") % from market price</label>
+            <input readonly="@(UseFixedPrice)" type="number" @bind="MarketPriceMarginPct" @onblur="@(() => Calculate(MarketPriceMarginPct, "MarketPriceMarginPct"))" />            
+        }
 
 
-        if (!UseFixedPrice)
+@*         if (!UseFixedPrice)
         {
             <label>Deactive offer if @(Direction == "BUY" ? "above" : "below")</label>
             <input readonly="@true" type="number" @bind="TriggerAmount" />
-        }
+        } *@
 
         <label>Amount in @(SelectedCurrencyCode) to @(Direction == "BUY" ? "spend" : "receive")</label>
         <input type="number" @bind="FiatPrice" @onblur="@(() => Calculate(FiatPrice, "FiatPrice"))" />
@@ -102,7 +112,7 @@
             <label>Trade fee</label>
             <img src="icons/info.svg" class="info" @onclick="() => ShowFeeInfoModal = true" />
         </div>
-        <InfoRow Value="@($"{TradeFee.ToMonero()} XMR (~{TradeFeeFiat} {SelectedCurrencyCode})")"></InfoRow>
+        <InfoRow Value="@($"{TradeFee.ToMonero()} XMR (~{TradeFeeCounterCurrency} {SelectedCurrencyCode})")"></InfoRow>
         <InfoRow Label="Required funds" Value=@(RequiredFunds.ToMonero() + " XMR")></InfoRow>
 
         @if (Direction == "SELL")

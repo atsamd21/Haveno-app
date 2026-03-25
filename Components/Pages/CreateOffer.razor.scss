@@ -48,3 +48,9 @@
         margin-bottom: 3px;
     }
 }
+
+::deep .review-offer {
+    p {
+        line-break: anywhere;
+    }
+}
