@@ -1,12 +1,16 @@
-﻿using CommunityToolkit.Maui.Storage;
+﻿using Android.Content;
+using AndroidX.Core.Content;
+using CommunityToolkit.Maui.Storage;
+using Grpc.Net.Client.Web;
 using HavenoSharp.Services;
 using HavenoSharp.Singletons;
 using Manta.Helpers;
 using Manta.Models;
+using Manta.Services;
 using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
-using Grpc.Net.Client.Web;
-using Manta.Services;
+using System.IO.Compression;
+using System.IO.Pipelines;
 
 namespace Manta.Components.Pages;
 
@@ -39,12 +43,15 @@ public partial class Settings : ComponentBase, IDisposable
     public IHavenoDaemonService HavenoDaemonService { get; set; } = default!;
     [Inject]
     public IHavenoXmrNodeService HavenoXmrNodeService { get; set; } = default!;
+    [Inject]
+    public IHavenoServerService HavenoServerService { get; set; } = default!;
 
     public CancellationTokenSource? MoneroNodeConnectCancellationTokenSource;
     public bool IsConnectingToMoneroNode { get; set; }
 
     public bool IsFetching { get; set; }
     public bool IsBackingUp { get; set; }
+    public bool IsRestoring { get; set; }
     public bool ShowConnectToRemoteNodeModal { get; set; }
     public bool ShowConfirmLinkModal { get; set; }
     public string? LinkToOpen { get; set; }
@@ -136,52 +143,224 @@ public partial class Settings : ComponentBase, IDisposable
 
     public async Task RestoreFromBackupAsync()
     {
+        IsRestoring = true;
+
         var backupZip = await FilePicker.PickAsync();
         if (backupZip is null)
+        {
+            IsRestoring = false;
             return;
+        }
 
-        using var fileStream = File.Open(backupZip.FullPath, FileMode.Open);
+        if (!backupZip.FileName.EndsWith(".zip"))
+            throw new Exception("Backup file should be a zip file.");
 
-        using MemoryStream memoryStream = new();
-        fileStream.CopyTo(memoryStream);
+        var task = Task.Run(async() =>
+        {
+            await Task.Yield();
 
-        // Bugged, for some reason daemon restarts after account deleted and creates a new account
-        await AccountService.DeleteAccountAsync();
+#if ANDROID
+            // So we can unregister later
+            var receiver = new ProgressReceiver();
+#endif
 
-        await AccountService.RestoreAccountAsync(memoryStream);
+            await NotificationSingleton.StopNotificationListenerAsync();
+            PauseTokenSource.Pause();
+
+            try
+            {
+                await HavenoServerService.StopAsync();
+                while (await HavenoDaemonService.IsHavenoDaemonRunningAsync())
+                {
+                    await Task.Delay(50);
+                }
+
+#if ANDROID
+                var filter = new IntentFilter($"{AppConstants.ApplicationId}.BACKEND_EXIT");
+
+                if (OperatingSystem.IsAndroidVersionAtLeast(33))
+                {
+                    Platform.AppContext.RegisterReceiver(receiver, filter, ReceiverFlags.NotExported);
+                }
+                else
+                {
+                    Platform.AppContext.RegisterReceiver(receiver, filter);
+                }
+
+                var startBackendIntent = new Intent(Platform.AppContext, typeof(BackendService)).SetAction("ACTION_STOP_BACKEND");
+                ContextCompat.StartForegroundService(Platform.AppContext, startBackendIntent);
+
+                try
+                {
+                    await receiver.CompletedTCS.Task;
+                }
+                catch (TaskCanceledException)
+                {
+                    // Should throw
+                }
+#endif
+
+                Directory.Delete(Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", AppConstants.HavenoAppName), true);
+
+                using var fileStream = File.Open(backupZip.FullPath, FileMode.Open);
+                using var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read);
+
+                try
+                {
+                    if (Directory.Exists(Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", "tmp")))
+                        Directory.Delete(Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", "tmp"), true);
+                }
+                catch { }
+
+                var tmpDir = Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", "tmp");
+
+                zipArchive.ExtractToDirectory(tmpDir);
+
+                var files = Directory.GetDirectories(tmpDir);
+                if (files.FirstOrDefault(x => x.Contains("xmr_")) is null)
+                    throw new Exception("The selected zip file does not contain Haveno backup files.");
+
+                // Rename
+                Directory.Move(
+                    tmpDir,
+                    Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", AppConstants.HavenoAppName));
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    if (Directory.Exists(Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", "tmp")))
+                        Directory.Delete(Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", "tmp"), true);
+                }
+                catch (Exception e2)
+                {
+                    throw new AggregateException(e, e2);
+                }
+
+                throw;
+            }
+            finally
+            {
+#if ANDROID
+                try
+                {
+                    var cacheDir = Android.App.Application.Context.ExternalCacheDir!.Path;
+                    if (Directory.Exists(cacheDir))
+                    {
+                        Directory.Delete(cacheDir, true);
+                        Directory.CreateDirectory(cacheDir);
+                    }
+                }
+                catch
+                {
+
+                }
+
+                try
+                {
+                    Platform.AppContext.UnregisterReceiver(receiver);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to unregister receiver: {e}");
+                }
+#endif
+                PauseTokenSource.Resume();
+            }
+        });
+
+        await task;
+
+        NavigationManager.NavigateTo("/", forceLoad: true);
     }
 
     public async Task BackupAsync()
     {
         IsBackingUp = true;
 
-        try
+        var result = await FolderPicker.Default.PickAsync();
+        if (!result.IsSuccessful)
         {
-            var result = await FolderPicker.Default.PickAsync();
-            if (!result.IsSuccessful)
-            {
-                IsBackingUp = false;
-                return;
-            }
+            IsBackingUp = false;
+            return;
+        }
 
-            BackupCts = new();
-            using var backupStream = await AccountService.BackupAccountAsync(BackupCts.Token);
+        var backupTask = Task.Run(async() =>
+        {
+            try
+            {
+                PauseTokenSource.Pause();
+
+                BackupCts = new();
+
+                if (SecureStorageHelper.Get<DaemonInstallOptions>("daemon-installation-type") == DaemonInstallOptions.RemoteNode)
+                {
+                    using var backupStream = await AccountService.BackupAccountAsync(BackupCts.Token);
 
 #pragma warning disable CA1416
-            var fileSaverResult = await FileSaver.Default.SaveAsync(result.Folder.Path, $"haveno_backup_{DateTime.Now}-{Guid.NewGuid()}.zip", backupStream);
+                    // UI thread needed?
+                    var fileSaverResult = await FileSaver.Default.SaveAsync(result.Folder.Path, $"haveno_backup_{DateTime.Now}-{Guid.NewGuid()}.zip", backupStream, BackupCts.Token);
 #pragma warning restore CA1416
 
-            if (!fileSaverResult.IsSuccessful)
-            {
-                IsBackingUp = false;
-                return;
+                    if (!fileSaverResult.IsSuccessful)
+                    {
+                        throw new AggregateException(fileSaverResult.Exception);
+                    }
+                }
+                else
+                {
+                    var directoryToZip = Path.Combine(Android.App.Application.Context.FilesDir!.AbsolutePath, ".local", "share", AppConstants.HavenoAppName);
+
+                    var pipe = new Pipe();
+
+                    var zipTask = Task.Run(async () =>
+                    {
+                        await using var pipeStream = pipe.Writer.AsStream();
+
+                        using var archive = new ZipArchive(pipeStream, ZipArchiveMode.Create, leaveOpen: true);
+
+                        foreach (var file in Directory.GetFiles(directoryToZip, "*", SearchOption.AllDirectories))
+                        {
+                            var relativePath = Path.GetRelativePath(directoryToZip, file);
+                            if (relativePath == "monerod" || relativePath == "monero-wallet-rpc")
+                                continue;
+
+                            var entry = archive.CreateEntry(relativePath, CompressionLevel.Optimal);
+
+                            await using var entryStream = entry.Open();
+                            await using var fileStream = File.OpenRead(file);
+
+                            await fileStream.CopyToAsync(entryStream, BackupCts.Token);
+                        }
+
+                        archive.Dispose();
+
+                        await pipeStream.FlushAsync(BackupCts.Token);
+                        await pipe.Writer.CompleteAsync();
+                    }, BackupCts.Token);
+
+                    await using var backupStream = pipe.Reader.AsStream();
+
+#pragma warning disable CA1416
+                    // UI thread?
+                    var fileSaverResult = await FileSaver.Default.SaveAsync(result.Folder.Path, $"haveno_backup_{DateTime.Now}-{Guid.NewGuid()}.zip", backupStream, BackupCts.Token);
+#pragma warning restore CA1416
+
+                    await zipTask;
+
+                    if (!fileSaverResult.IsSuccessful)
+                    {
+                        throw new AggregateException(fileSaverResult.Exception);
+                    }
+                }
             }
-        }
-        catch
-        {
+            finally
+            {
+                PauseTokenSource.Resume();
+            }
+        });
 
-        }
-
+        await backupTask;
         IsBackingUp = false;
     }
 

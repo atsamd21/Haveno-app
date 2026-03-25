@@ -11,7 +11,7 @@ namespace Manta.Services;
 public class ProgressReceiver : BroadcastReceiver
 {
     public event Action<string>? OnProgressChanged;
-    public TaskCompletionSource CompletedTCS { get; } = new();
+    public TaskCompletionSource CompletedTCS { get; private set; } = new();
 
     public override void OnReceive(Context? context, Intent? intent)
     {
@@ -23,6 +23,13 @@ public class ProgressReceiver : BroadcastReceiver
             return;
         }
 
+        if (intent?.Action == $"{AppConstants.ApplicationId}.BACKEND_EXIT")
+        {
+            CompletedTCS.SetCanceled();
+            CompletedTCS = new();
+            return;
+        }
+
         var progress = intent?.GetStringExtra("progress");
         if (progress is null)
             return;
@@ -30,7 +37,7 @@ public class ProgressReceiver : BroadcastReceiver
         OnProgressChanged?.Invoke(progress);
 
         var isDone = intent?.GetBooleanExtra("isDone", false);
-        if (isDone is not null and true)
+        if (isDone is not null and true && !CompletedTCS.Task.IsCompleted)
             CompletedTCS.SetResult();
     }
 }

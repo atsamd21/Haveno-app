@@ -1,5 +1,9 @@
 ﻿@page "/settings"
 
+<Modal Title="Restoring account" ModalButtonOptions="ModalButtonOptions.NONE" @bind-IsOpen="IsRestoring" IsCloseable="false">
+    <p class="regular-p-grey">Please wait. The app will reload automatically after the account has been restored.</p>
+</Modal>
+
 <div>
     <Modal Title="Confirm" ModalButtonOptions="ModalButtonOptions.CANCEL" @bind-IsOpen="ShowConfirmLinkModal">
         <p class="regular-p-grey">Are you sure you want to open this link?</p>
@@ -15,7 +19,7 @@
     <p class="regular-p-grey">Please wait</p>
     <p class="regular-p-grey">Note: This can take a long time when using a remote node</p>
 </Modal>
-<Modal Title="Restore account" ModalButtonOptions="ModalButtonOptions.NONE" @bind-IsOpen="ShowRestoreModal" OnOkPressed="RestoreFromBackupAsync" OkButtonText="Restore">
+<Modal Title="Restore account" ModalButtonOptions="ModalButtonOptions.OK_CANCEL" @bind-IsOpen="ShowRestoreModal" OnOkPressed="RestoreFromBackupAsync" OkButtonText="Continue">
     <p class="regular-p-grey">Warning! This will delete your current account. Make sure you have made a backup</p>
 </Modal>
 <Modal Title="Connecting" ModalButtonOptions="ModalButtonOptions.NONE" IsOpen="ShowConnectToRemoteNodeModal" IsOpenChanged="@(async (isOpen) => { ShowConnectToRemoteNodeModal = isOpen; if (!isOpen) await CancelConnectToRemoteNodeAsync(); })">
@@ -105,7 +109,7 @@
     </div>
     <div class="backup-buttons">
         <button class="backup-btn button-green" @onclick="BackupAsync">Backup account</button>
-        <button disabled class="backup-btn" @onclick="() => ShowRestoreModal = true">Restore account</button>
+        <button disabled="@(DaemonInstallOption == DaemonInstallOptions.RemoteNode)" class="backup-btn" @onclick="() => ShowRestoreModal = true">Restore account</button>
     </div>
 
     <Toggle OnToggledChanged="HandleToggleAsync" @bind-IsToggled="IsNotificationsToggled" Text="Notifications" />

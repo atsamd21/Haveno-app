@@ -22,6 +22,9 @@ public class BackendService : Service
     private CancellationTokenSource? _daemonCts;
     private TaskCompletionSource? _torReadyTCS;
 
+    private Task? _torTask;
+    private Task? _daemonTask;
+
     public BackendService()
     {
         
@@ -93,10 +96,10 @@ public class BackendService : Service
         if (intent is null)
             return StartCommandResult.RedeliverIntent;
 
-        switch (intent.Action) 
+        switch (intent.Action)
         {
             case "ACTION_STOP_BACKEND":
-                StopHavenoDaemon();
+                StopBackend();
                 break;
             case "ACTION_START_BACKEND":
                 {
@@ -117,7 +120,7 @@ public class BackendService : Service
         return StartCommandResult.RedeliverIntent;
     }
 
-    void UpdateProgress(string progress, bool isDone = false)
+    private void UpdateProgress(string progress, bool isDone = false)
     {
         var intent = new Intent($"{AppConstants.ApplicationId}.BACKEND_PROGRESS");
         intent.PutExtra("progress", progress);
@@ -128,7 +131,7 @@ public class BackendService : Service
         SendBroadcast(intent);
     }
 
-    void UpdateException(Exception exception)
+    private void UpdateException(Exception exception)
     {
         var intent = new Intent($"{AppConstants.ApplicationId}.BACKEND_PROGRESS");
         intent.PutExtra("exception", exception.Message);
@@ -149,7 +152,7 @@ public class BackendService : Service
         var daemonPath = havenoDaemonService.GetDaemonPath();
 
         // Tor does not always connect successfully, need to timeout and give the user the option to restart
-        _ = Task.Factory.StartNew(() =>
+        _torTask = Task.Factory.StartNew(() =>
         {
             _torCts = new();
 
@@ -174,7 +177,7 @@ public class BackendService : Service
                 using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
 
                 string? line;
-                while ((line = streamReader.ReadLine()) is not null)
+                while (!_torCts.IsCancellationRequested && (line = streamReader.ReadLine()) is not null)
                 {
 #if DEBUG
                     Console.WriteLine(line);
@@ -216,13 +219,13 @@ public class BackendService : Service
             }
             catch (Exception e)
             {
-                StopHavenoDaemon();
+                StopBackend();
                 UpdateException(e);
                 throw;
             }
         }, TaskCreationOptions.LongRunning);
 
-        _ = Task.Factory.StartNew(async () =>
+        _daemonTask = Task.Factory.StartNew(async () =>
         {
             await _torReadyTCS.Task;
 
@@ -255,18 +258,18 @@ public class BackendService : Service
                     $"--appName={AppConstants.HavenoAppName}",
                     $"--apiPassword={password}", 
                     "--apiPort=3201", 
-                    "--passwordRequired=false", 
+                    "--passwordRequired=true", 
                     "--useNativeXmrWallet=false", 
                     "--torControlHost=127.0.0.1", 
                     "--torControlPort=9061");
 
                 string? line;
-                while ((line = streamReader.ReadLine()) is not null)
+                while (!_daemonCts.IsCancellationRequested && (line = streamReader.ReadLine()) is not null)
                 {
 #if DEBUG
                     Console.WriteLine(line);
 #endif
-                    if (line.Contains("Init wallet"))
+                    if (line.Contains("Init wallet") || line.Contains("Interactive login required"))
                     {
                         UpdateProgress("Initializing wallet", true);
                     }
@@ -284,21 +287,24 @@ public class BackendService : Service
             }
             catch (Exception e)
             {
-                StopHavenoDaemon();
+                StopBackend();
                 UpdateException(e);
                 throw;
             }
         }, TaskCreationOptions.LongRunning);
     }
 
-    public void StopHavenoDaemon()
+    private void StopBackend()
     {
         _daemonCts?.Cancel();
+        _daemonTask?.Wait();
         _daemonCts?.Dispose();
 
         _torCts?.Cancel();
+        _torTask?.Wait();
         _torCts?.Dispose();
 
+        SendBroadcast(new Intent($"{AppConstants.ApplicationId}.BACKEND_EXIT").SetPackage(Android.App.Application.Context.PackageName));
         StopSelf();
     }
 

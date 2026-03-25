@@ -1,4 +1,4 @@
-using HavenoSharp.Services;
+﻿using HavenoSharp.Services;
 using HavenoSharp.Singletons;
 using Manta.Helpers;
 using Manta.Models;
@@ -6,6 +6,7 @@ using Manta.Services;
 using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
 using Grpc.Net.Client.Web;
+using Grpc.Core;
 
 namespace Manta.Components.Pages;
 
@@ -14,6 +15,7 @@ public partial class Index : ComponentBase
     public bool IsInitializing { get; set; }
     public DaemonSetupState DaemonSetupState { get; set; }
     public bool IsInstallTypeModalOpen { get; set; }
+    public HavenoSharp.Models.Responses.GetWalletHeightResponse? WalletHeight { get; set; }
     public string DaemonStartInfo { get; set; } = string.Empty;
     public double InstallProgress { get; set; }
     public bool IsDaemonStartInfoModalOpen { get; set; }
@@ -26,6 +28,10 @@ public partial class Index : ComponentBase
     public IHavenoDaemonService HavenoDaemonService { get; set; } = default!;
     [Inject]
     public IHavenoXmrNodeService HavenoXmrNodeService { get; set; } = default!;
+    [Inject]
+    public IHavenoWalletService HavenoWalletService { get; set; } = default!;
+    [Inject]
+    public IHavenoAccountService HavenoAccountService { get; set; } = default!;
 
     [Inject]
     public NotificationSingleton NotificationSingleton { get; set; } = default!;
@@ -33,6 +39,8 @@ public partial class Index : ComponentBase
     public GrpcChannelSingleton GrpcChannelSingleton { get; set; } = default!;
     [Inject]
     public DaemonConnectionSingleton DaemonConnectionSingleton { get; set; } = default!;
+
+    public CancellationTokenSource? InitializingTokenSource;
 
     public async void HandleDaemonStartInfoChange(string info)
     {
@@ -54,7 +62,7 @@ public partial class Index : ComponentBase
                 if (!await InstallHavenoDaemonAsync()) 
                     return;
 
-                await StartHaveno();
+                await StartHavenoStandalone();
                 break;
             case DaemonInstallOptions.RemoteNode:
                 NavigationManager.NavigateTo("/Settings");
@@ -63,20 +71,52 @@ public partial class Index : ComponentBase
         }
     }
 
-    public async Task StartHaveno()
+    public async Task StartHavenoStandalone()
     {
         IsDaemonStartInfoModalOpen = true;
+
+        InitializingTokenSource = new();
+        var task = Task.Run(async () =>
+        {
+            while (!InitializingTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    WalletHeight = await HavenoWalletService.GetHeightAsync(InitializingTokenSource.Token);
+                    Console.WriteLine(WalletHeight.Height);
+                    await InvokeAsync(StateHasChanged);
+                }
+                catch (RpcException)
+                {
+
+                }
+
+                await Task.Delay(100);
+            }
+        });
+
         await HavenoDaemonService.TryStartLocalHavenoDaemonAsync(Guid.NewGuid().ToString(), "http://127.0.0.1:3201", HandleDaemonStartInfoChange);
 
-        CancellationTokenSource initializingTokenSource = new();
-        var daemonInitialized = await HavenoDaemonService.WaitHavenoDaemonInitializedAsync(initializingTokenSource.Token);
-        if (!daemonInitialized)
+        while (!await HavenoDaemonService.IsHavenoDaemonRunningAsync(InitializingTokenSource.Token))
         {
-            // Tell user
+            await Task.Delay(50);
         }
 
-        HandleDaemonStartInfoChange("Initializing wallet");
-        await HavenoDaemonService.WaitWalletInitializedAsync(initializingTokenSource.Token);
+        // If password is null account should open automatically
+        if (!await HavenoAccountService.IsAccountOpenAsync(InitializingTokenSource.Token))
+        {
+            if (!await HavenoAccountService.AccountExistsAsync())
+            {
+                await HavenoAccountService.CreateAccountAsync("haveno0000");
+            }
+
+            await HavenoAccountService.OpenAccountAsync("haveno0000");
+        }
+
+        await HavenoDaemonService.WaitHavenoDaemonInitializedAsync(InitializingTokenSource.Token);
+
+        InitializingTokenSource.Cancel();
+        await task;
 
         NavigationManager.NavigateTo("/Market");
     }
@@ -204,7 +244,10 @@ public partial class Index : ComponentBase
                             return;
                         }
 
-                        await StartHaveno();
+                        // If restoring
+                        NotificationSingleton.TradeInfos.Clear();
+
+                        await StartHavenoStandalone();
                     }
                     break;
 #if ANDROID

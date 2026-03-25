@@ -72,14 +72,14 @@
     </div>
     @if (DaemonStartInfo == "Initializing wallet")
     {
-        <button class="button-submit" @onclick="@(() => NavigationManager.NavigateTo("/Market"))">Skip initialization</button>
+        <button class="button-submit" @onclick="@(() => { InitializingTokenSource?.Cancel(); NavigationManager.NavigateTo("/Market"); })">Skip initialization</button>
     }
 </Modal>
 <Modal 
     IsOpen="UpdateErrorMessage is not null" 
     Title="Update error"
     ModalButtonOptions="ModalButtonOptions.OK_CANCEL"
-    OnCancelPressed="@(async () => { UpdateErrorMessage = null; await StartHaveno(); })"
+    OnCancelPressed="@(async () => { UpdateErrorMessage = null; await StartHavenoStandalone(); })"
     OnOkPressed="@(() => { UpdateErrorMessage = null; NavigationManager.NavigateTo("/", true); })"
     OkButtonText="Retry"
     CancelButtonText="Skip update">

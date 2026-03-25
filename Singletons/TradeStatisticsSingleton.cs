@@ -24,7 +24,7 @@ public class TradeStatisticsSingleton
 
     public async Task FetchTradeStatisticsAsync()
     {
-        while (true) 
+        while (true)
         {
             try
             {
@@ -46,13 +46,9 @@ public class TradeStatisticsSingleton
 #endif
                 }
             }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
             catch (Exception)
             {
-                //Console.WriteLine(e);
+
             }
             finally
             {
@@ -61,5 +57,6 @@ public class TradeStatisticsSingleton
 
             await Task.Delay(_delay, _cancellationTokenSource.Token);
         }
+
     }
 }
