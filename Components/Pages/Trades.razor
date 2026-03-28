@@ -16,6 +16,15 @@
                     <li class="trade-card">
                         <div class="trade-card-top">
                             <p class="short-id">@tradeInfo.ShortId</p>
+                            @if(tradeInfo.Offer.PaymentMethodId == "BLOCK_CHAINS")
+                            {
+                                <p class="short-id">@tradeInfo.Offer.CounterCurrencyCode</p>
+                            }
+                            else
+                            {
+                                <p class="short-id">@tradeInfo.Offer.PaymentMethodShortName</p>
+                            }
+                            @* TODO Show progress here *@
                             @if (SelectedTabIndex == 1)
                             {
                                 <p class="short-id">@(tradeInfo.IsCompleted ? "Completed" : "") </p>

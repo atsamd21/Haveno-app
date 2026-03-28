@@ -104,6 +104,16 @@
             }
             @switch (SellerState)
             {
+                case 2:
+                    if (TradeInfo.Offer.PaymentMethodId == "F2F")
+                    {
+                        <p class="bold-p f2f-buyer-info">Buyer's contact information</p>
+                        <InfoRow IsExpandable="true" Label="Country" Value="@TradeInfo.Offer.AcceptedCountriesString"></InfoRow>
+                        <InfoRow IsExpandable="true" Label="City for 'face to face' meeting" Value="@TradeInfo.Offer.City"></InfoRow>
+                        <InfoRow IsExpandable="true" Label="Contact info" Value="N/A"></InfoRow>
+                        <InfoRow IsExpandable="true" Label="Additional information" Value="@TradeInfo.Offer.ExtraInfo"></InfoRow>
+                    }
+                    break;
                 case 3:
                     <div class="slider-wrapper">
                         <div class="payment-instructions">
@@ -139,6 +149,7 @@
                     <img src="icons/arrow-right.svg" />
                     @(TradeInfo.Offer.Direction == "SELL" ? TradeInfo.Offer.BaseCurrencyCode : TradeInfo.Offer.CounterCurrencyCode)
                 </div>
+                <p>Payment method: @TradeInfo.Offer.PaymentMethodShortName</p>
                 <div class="amount-info">
                     <p>Amount: @TradeInfo.Amount.ToMonero() @(IsFiat ? "XMR" : TradeInfo.Offer.BaseCurrencyCode) / @TradeInfo.TradeVolume @TradeInfo.Offer.CounterCurrencyCode</p>
                     <p>Price: @decimal.Parse(TradeInfo.Price, CultureInfo.InvariantCulture).ToString(TradeInfo.Offer.PaymentMethodId == "BLOCK_CHAINS" ? "0.0000####" : "0.0000") @TradeInfo.Offer.CounterCurrencyCode</p>
