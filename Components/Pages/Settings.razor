@@ -119,16 +119,19 @@
         <p class="note">Note: This uses more battery</p>        
     }
 
-    <p class="bold-p remote-node-txt">Remote node configuration</p>
-    <div class="@(IsRemoteNodeToggled ? "remote-node-section" : "remote-node-section remote-node-disabled")">
-        <button @onclick="ScanQRCodeAsync" class="qr-btn">Scan QR code</button>
-        <p class="or">Or</p>
-        <label class="bold-p">IP Address</label>
-        <input @bind="Host" type="text"/>
-        <label class="bold-p">Password</label>
-        <input @bind="Password" type="password" />
-        <p class="note">Note: you need to have Orbot installed</p>
-        <button @onclick="ConnectToRemoteNodeAsync">Connect to remote node</button>
-    </div>
-    <Toggle Disabled="true" OnToggledChanged="HandleRemoteNodeToggleAsync" @bind-IsToggled="IsRemoteNodeToggled" Text="Use remote node" />
+    @if (DaemonInstallOption == DaemonInstallOptions.RemoteNode)
+    {
+        <p class="bold-p remote-node-txt">Remote node configuration</p>
+        <div class="@(IsRemoteNodeToggled ? "remote-node-section" : "remote-node-section remote-node-disabled")">
+            <button @onclick="ScanQRCodeAsync" class="qr-btn">Scan QR code</button>
+            <p class="or">Or</p>
+            <label class="bold-p">IP Address</label>
+            <input @bind="Host" type="text"/>
+            <label class="bold-p">Password</label>
+            <input @bind="Password" type="password" />
+            <p class="note">Note: you need to have Orbot installed</p>
+            <button @onclick="ConnectToRemoteNodeAsync">Connect to remote node</button>
+        </div>
+        <Toggle Disabled="true" OnToggledChanged="HandleRemoteNodeToggleAsync" @bind-IsToggled="IsRemoteNodeToggled" Text="Use remote node" />        
+    }
 </div>
