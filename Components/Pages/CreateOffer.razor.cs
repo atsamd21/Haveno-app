@@ -93,20 +93,10 @@ public partial class CreateOffer : ComponentBase, IDisposable
         get;
         set
         {
-            Clear();
+            Clear(value);
             field = value;
 
             IsFiat = Enum.TryParse(typeof(Currency), field, out _);
-
-            if (NoMarketPrice = !BalanceSingleton.MarketPriceInfoDictionary.TryGetValue(field, out var _))
-            {
-                UseFixedPrice = true;
-            }
-            else
-            {
-                UseFixedPrice = false;
-            }
-
         }
     } = string.Empty;
 
@@ -194,6 +184,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
                 value = 50m;
 
             field = value;
+            MoneroAmount = MoneroAmount;
         }
     } = 15m;
     public bool BuyerAsTakerWithoutDeposit
@@ -220,7 +211,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
     private ValidationMessageStore? _messageStore;
     private EditContext? _editContext;
 
-    public void Clear()
+    public void Clear(string? selectedCurrencyCode = null)
     {
         MinimumMoneroAmount = 0m;
         MoneroAmount = 0m;
@@ -230,7 +221,14 @@ public partial class CreateOffer : ComponentBase, IDisposable
         FixedPrice = 0;
         SecurityDepositPct = 15m;
         TradeFee = 0;
-        UseFixedPrice = false;
+        if (NoMarketPrice = !BalanceSingleton.MarketPriceInfoDictionary.TryGetValue(selectedCurrencyCode ?? SelectedCurrencyCode, out var _))
+        {
+            UseFixedPrice = true;
+        }
+        else
+        {
+            UseFixedPrice = false;
+        }
         BuyerAsTakerWithoutDeposit = false;
     }
 
@@ -278,6 +276,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
                     if (NoMarketPrice)
                     {
                         MoneroAmount = value;
+                        FiatPrice = Math.Round(FixedPrice * MoneroAmount);
                     }
                     else
                     {
@@ -330,6 +329,10 @@ public partial class CreateOffer : ComponentBase, IDisposable
                                 FiatPrice = Math.Round(FixedPrice * MoneroAmount, 8);
                             }
                         }
+                        else
+                        {
+                            FiatPrice = Math.Round(FixedPrice * MoneroAmount);
+                        }
                     }
                 }
                 break;
@@ -337,7 +340,6 @@ public partial class CreateOffer : ComponentBase, IDisposable
                 {
                     if (!UseFixedPrice)
                     {
-                        FiatPrice = MoneroAmount * FixedPrice;
                         return;
                     }
 
@@ -366,7 +368,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
                     }
                     else
                     {
-                        FiatPrice = MoneroAmount * value;
+                        FiatPrice = Math.Round(MoneroAmount * value, 8);
                     }
 
                     if (MoneroAmount == MinimumMoneroAmount)
@@ -405,25 +407,25 @@ public partial class CreateOffer : ComponentBase, IDisposable
                         adjustedMktPrice = priceForOneXMR + (priceForOneXMR * percent);
                     }
 
-                    FixedPrice = adjustedMktPrice;
-
                     if (IsFiat)
                     {
+                        FixedPrice = adjustedMktPrice;
                         FiatPrice = Math.Round(adjustedMktPrice * MoneroAmount);
                     }
                     else
                     {
-                        FiatPrice = adjustedMktPrice * MoneroAmount;
+                        FixedPrice = Math.Round(adjustedMktPrice, 8);
+                        FiatPrice = Math.Round(adjustedMktPrice * MoneroAmount, 8);
                     }
 
                     if (MoneroAmount == MinimumMoneroAmount)
                     {
-                        MoneroAmount = Math.Round(FiatPrice / adjustedMktPrice, IsFiat ? 4 : 8);
+                        MoneroAmount = Math.Round(FiatPrice / adjustedMktPrice, 4);
                         MinimumMoneroAmount = MoneroAmount;
                     }
                     else
                     {
-                        MoneroAmount = Math.Round(FiatPrice / adjustedMktPrice, IsFiat ? 4 : 8);
+                        MoneroAmount = Math.Round(FiatPrice / adjustedMktPrice, 4);
 
                         if (MoneroAmount < MinimumMoneroAmount || MinimumMoneroAmount == 0m)
                         {
