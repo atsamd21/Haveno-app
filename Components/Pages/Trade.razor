@@ -4,6 +4,13 @@
     <p class="regular-p-grey">Please wait</p>
 </Modal>
 
+<Modal @bind-IsOpen="ShowMyAccountInfo" Title="My account info" ModalButtonOptions="ModalButtonOptions.CANCEL" CancelButtonText="Close">
+    @foreach (var keyVal in TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.MakerPaymentAccountPayload.Convert() : TradeInfo.Contract.TakerPaymentAccountPayload.Convert())
+    {
+        <InfoRow IsExpandable="true" Label="@keyVal.Key" Value="@keyVal.Value"></InfoRow>
+    }
+</Modal>
+
 @if (TradeInfo is not null)
 {
     <div class="trade-main">
@@ -122,8 +129,9 @@
                             <InfoRow Label="Amount to receive" Value="@(TradeInfo.TradeVolume + " " + (IsFiat ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode))"></InfoRow>
                             @* <InfoRow Label="Your trading account" Value="@(TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.MakerAccountId : TradeInfo.Contract.TakerAccountId)"></InfoRow> *@
 
-                            <InfoRow IsExpandable=true Label="Peer account data" Value="@((TradeInfo.Offer.PaymentMethodShortName) + " - " + string.Join(", ", (TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.TakerPaymentAccountPayload.Convert() : TradeInfo.Contract.MakerPaymentAccountPayload.Convert()).Select(x => x.Key + ": " + x.Value)))"></InfoRow>
+                            <InfoRow IsExpandable=true Label="Peer account info" Value="@((TradeInfo.Offer.PaymentMethodShortName) + " - " + string.Join(", ", (TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.TakerPaymentAccountPayload.Convert() : TradeInfo.Contract.MakerPaymentAccountPayload.Convert()).Select(x => x.Key + ": " + x.Value)))"></InfoRow>
                         </div>
+                        <button class="button-green show-my-account-btn" @onclick="() => ShowMyAccountInfo = true">Show my account info</button>
                         <Slider OnReachedEnd="async () => await ConfirmPaymentReceivedAsync(TradeInfo.TradeId)" Text="Payment received"/>
                     </div>
                     <Attention />

@@ -36,6 +36,7 @@ public partial class Trade : ComponentBase, IDisposable
     public DateTime TradeExpiresDateUTC { get; set; }
     public bool IsFetching { get; set; }
     public bool IsFiat { get; set; }
+    public bool ShowMyAccountInfo { get; set; }
 
     public string[] BuyerSteps { get; set; } = ["Wait for blockchain confirmations", "Start payment", "Wait until payment arrived", "Completed"];
     public string[] SellerSteps { get; set; } = ["Wait for blockchain confirmations", "Wait until payment has been sent", "Confirm payment received", "Completed"];
