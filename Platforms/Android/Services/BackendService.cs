@@ -20,7 +20,6 @@ public class BackendService : Service
 
     private CancellationTokenSource? _torCts;
     private CancellationTokenSource? _daemonCts;
-    private TaskCompletionSource? _torReadyTCS;
 
     private Task? _torTask;
     private Task? _daemonTask;
@@ -142,8 +141,6 @@ public class BackendService : Service
 
     private void StartBackend(string password)
     {
-        _torReadyTCS = new();
-
         var serviceProvider = IPlatformApplication.Current?.Services;
         if (serviceProvider is null)
             throw new Exception("serviceProvider was null in StartBackend()");
@@ -151,84 +148,8 @@ public class BackendService : Service
         var havenoDaemonService = serviceProvider.GetRequiredService<IHavenoDaemonService>();
         var daemonPath = havenoDaemonService.GetDaemonPath();
 
-        // Tor does not always connect successfully, need to timeout and give the user the option to restart
-        _torTask = Task.Factory.StartNew(() =>
-        {
-            _torCts = new();
-
-            try
-            {
-                // Check if tor running
-                using var tcpClient = new TcpClient("127.0.0.1", 9060);
-                // Try to kill
-                var result = Proot.RunProotUbuntuCommand("pkill", "-f", "-9", "tor");
-            }
-            catch { }
-
-            try
-            {
-                using var tcpClient = new TcpClient("127.0.0.1", 9061);
-                var result = Proot.RunProotUbuntuCommand("pkill", "-f", "-9", "tor");
-            }
-            catch { }
-
-            try
-            {
-                using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
-
-                string? line;
-                while (!_torCts.IsCancellationRequested && (line = streamReader.ReadLine()) is not null)
-                {
-#if DEBUG
-                    Console.WriteLine(line);
-#endif
-                    int lastPercentage = 0;
-
-                    for (int i = 0; i < line.Length; i++)
-                    {
-                        if (line[i] == '%')
-                        {
-                            StringBuilder stringBuilder = new();
-                            for (int j = i - 1; j > 0; j--)
-                            {
-                                if (line[j] > '9' || line[j] < '0')
-                                    break;
-
-                                stringBuilder.Append(line[j]);
-                            }
-
-                            if (stringBuilder.Length > 0)
-                            {
-                                var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
-
-                                if (percentage > lastPercentage)
-                                {
-                                    lastPercentage = percentage;
-
-                                    UpdateProgress($"Tor bootstrapping: {percentage}%");
-
-                                    if (percentage == 100)
-                                    {
-                                        _torReadyTCS.SetResult();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                StopBackend();
-                UpdateException(e);
-                throw;
-            }
-        }, TaskCreationOptions.LongRunning);
-
         _daemonTask = Task.Factory.StartNew(async () =>
         {
-            await _torReadyTCS.Task;
-
             UpdateProgress("Starting daemon");
 
             _daemonCts = new();
@@ -259,9 +180,7 @@ public class BackendService : Service
                     $"--apiPassword={password}", 
                     "--apiPort=3201", 
                     "--passwordRequired=true", 
-                    "--useNativeXmrWallet=false", 
-                    "--torControlHost=127.0.0.1", 
-                    "--torControlPort=9061");
+                    "--useNativeXmrWallet=false");
 
                 string? line;
                 while (!_daemonCts.IsCancellationRequested && (line = streamReader.ReadLine()) is not null)
