@@ -155,6 +155,8 @@ public partial class Account : ComponentBase
             case "VENMO":
             case "PAYPAL":
                 return FieldId.EMAIL_OR_MOBILE_NR_OR_USERNAME;
+            case "BLIK":
+                return FieldId.COUNTRY;                
             case "PAYSAFE":
             case "WISE":
             case "PAXUM":
@@ -220,6 +222,8 @@ public partial class Account : ComponentBase
         {
             countryField.Value = country;
         }
+        
+        SetAccounNameFieldValueIfPossible(fieldId);
     }
 
     public void HandleAccountClick(PaymentAccount paymentAccount)
@@ -254,12 +258,17 @@ public partial class Account : ComponentBase
         SubmitButtonDisabled = !_editContext.Validate();
         _editContext.NotifyValidationStateChanged();
 
-        if (!CustomAccountNameEnabled && AccountNameField is not null && CopyFromField is not null && field.Id == CopyFromField.Id)
+        SetAccounNameFieldValueIfPossible(field.Id);
+
+        StateHasChanged();
+    }
+
+    private void SetAccounNameFieldValueIfPossible(in FieldId fieldId)
+    {
+        if (!CustomAccountNameEnabled && AccountNameField is not null && CopyFromField is not null && fieldId == CopyFromField.Id)
         {
             AccountNameField.Value = $"{TraditionalPaymentMethodStrings[SelectedPaymentMethodId]}: {CopyFromField.Value}";
         }
-
-        StateHasChanged();
     }
 
     public void HandleCryptoAddressChange()
