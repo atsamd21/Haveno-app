@@ -82,7 +82,7 @@ public class WindowsHavenoDaemonService : HavenoDaemonServiceBase
                         "--apiPort=3201 " +
                         "--passwordRequired=false " +
                         "--disableRateLimits=true " +
-                        "--useNativeXmrWallet=false",
+                        $"--useNativeXmrWallet={AppPreferences.Get<bool>(AppPreferences.UseNativeXmrWallet).ToString().ToLowerInvariant()}",
 
             WorkingDirectory = currentDirectory
         };
