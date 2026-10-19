@@ -154,6 +154,8 @@
     <Toggle OnToggledChanged="HandleNotificationsToggleAsync" @bind-IsToggled="IsNotificationsToggled" Text="Notifications" />
     @if (DaemonInstallOption == DaemonInstallOptions.Standalone)
     {
+        <Toggle OnToggledChanged="HandleNativeWalletToggle" @bind-IsToggled="UseNativeXmrWallet" Text="Use native wallet (experimental)" />
+        <p class="note">Note: Uses native wallet libraries instead of monero-wallet-rpc. Restart your device to apply changes; closing the app may leave Haveno running in the background.</p>
         <Toggle OnToggledChanged="HandleWakeLockToggle" @bind-IsToggled="IsWakeLockToggled" Text="Keep offers open in background" />
         <p class="note">Note: This uses more battery</p>        
     }

@@ -180,7 +180,7 @@ public class BackendService : Service
                     $"--apiPassword={password}", 
                     "--apiPort=3201", 
                     "--passwordRequired=true", 
-                    "--useNativeXmrWallet=false");
+                    $"--useNativeXmrWallet={AppPreferences.Get<bool>(AppPreferences.UseNativeXmrWallet).ToString().ToLowerInvariant()}");
 
                 string? line;
                 while (!_daemonCts.IsCancellationRequested && (line = streamReader.ReadLine()) is not null)
