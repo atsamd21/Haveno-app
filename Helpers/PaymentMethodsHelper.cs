@@ -136,6 +136,7 @@ public static class PaymentMethodsHelper
         { "CASH_APP_SHORT", "Cash App" },
         { "VENMO_SHORT", "Venmo" },
         { "PAYPAL_SHORT", "PayPal" },
-        { "PAYSAFE_SHORT", "Paysafe" }
+        { "PAYSAFE_SHORT", "Paysafe" },
+        { "BLIK", "BLIK" }
     };
 }

@@ -107,12 +107,12 @@
                     case FieldId.ACCOUNT_NAME:
                         <div class="field">
                             <label>@field.Label</label>
-                            <InputText readonly="@(!CustomAccountNameEnabled)" @bind-Value="field.Value"></InputText>
+                            <InputText readonly="@(!CustomAccountNameEnabled)" @bind-Value:get="field.Value" @bind-Value:set="@(newValue => SetAccountName(newValue, field))"></InputText>
                             <div class="custom-account-name">
                                 <InputCheckbox @bind-Value="@CustomAccountNameEnabled" />
                                 <label>Use custom account name</label>
                             </div>
-                            <ValidationMessage For="() => field.Label" />
+                            <ValidationMessage For="() => field.Value" />
                         </div>
                         break;
                     case FieldId.SALT:
