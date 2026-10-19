@@ -279,10 +279,7 @@ public partial class BuySell : ComponentBase, IDisposable
             }
         }
 
-        if (!ShowNoDepositOffers)
-        {
-            filteredOffers = filteredOffers.Where(x => x.BuyerSecurityDepositPct > 0);
-        }
+        filteredOffers = filteredOffers.Where(x => x.IsPrivateOffer == ShowNoDepositOffers );
 
         return [.. filteredOffers.OrderBy(x => x.MarketPriceMarginPct)];
     }
