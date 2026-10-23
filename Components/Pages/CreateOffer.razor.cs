@@ -87,6 +87,7 @@ public partial class CreateOffer : ComponentBase, IDisposable
     public bool NoMarketPrice { get; set; }
     public bool IsFiat { get; set; }
     public bool UseMinimumSecurityDeposit { get; set; }
+    public bool ReserveExactAmount { get; set; }
 
     public string SelectedCurrencyCode
     {
@@ -553,7 +554,8 @@ public partial class CreateOffer : ComponentBase, IDisposable
                 MarketPriceMarginPct = 0,
                 Price = "",
                 UseMarketBasedPrice = true,
-                BuyerAsTakerWithoutDeposit = BuyerAsTakerWithoutDeposit
+                BuyerAsTakerWithoutDeposit = BuyerAsTakerWithoutDeposit,
+                ReserveExactAmount = ReserveExactAmount
             };
 
             if (!string.IsNullOrEmpty(ExtraInfo))
