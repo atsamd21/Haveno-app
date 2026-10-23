@@ -1,6 +1,5 @@
 ﻿using HavenoSharp.Models;
 using HavenoSharp.Services;
-using Manta.Components.Reusable;
 using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
 
@@ -14,20 +13,15 @@ public partial class Trades : ComponentBase, IDisposable
     public NavigationManager NavigationManager { get; set; } = default!;
     [Inject]
     public IHavenoDisputeService DisputeService { get; set; } = default!;
+    [Inject]
+    public IHavenoTradeService TradeService { get; set; } = default!;
 
     [Parameter]
     [SupplyParameterFromQuery]
     public int SelectedTabIndex 
     { 
         get;
-        set
-        {
-            field = value;
-            if (value == 2)
-            {
-                GetDisputes();
-            }
-        }
+        set;
     }
 
     public List<TradeInfo> FilteredTradeInfos 
@@ -37,10 +31,12 @@ public partial class Trades : ComponentBase, IDisposable
             switch(SelectedTabIndex)
             {
                 case 0:
-                    return NotificationSingleton.TradeInfos.Values.Where(x => !x.IsCompleted).OrderByDescending(x => x.Date).ToList();
+                    return OpenTradeInfos.OrderByDescending(x => x.Date).ToList();
                 case 1:
-                    return NotificationSingleton.TradeInfos.Values.Where(x => x.IsCompleted).OrderByDescending(x => x.Date).ToList();
+                    return ClosedTradeInfos.OrderByDescending(x => x.Date).ToList();
                 case 2:
+                    return FailedTradeInfos.OrderByDescending(x => x.Date).ToList();
+                case 3:
                     return [];
                 default: 
                     return [];
@@ -52,15 +48,9 @@ public partial class Trades : ComponentBase, IDisposable
 
     public TradeInfo? CompletedTradeInfo;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
+    public List<TradeInfo> OpenTradeInfos { get; set; } = [];
+    public List<TradeInfo> ClosedTradeInfos { get; set; } = [];
+    public List<TradeInfo> FailedTradeInfos { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,6 +59,12 @@ public partial class Trades : ComponentBase, IDisposable
             // Timeout needed
             await NotificationSingleton.InitializedTCS.Task;
         }
+
+        OpenTradeInfos = await TradeService.GetTradesAsync(Category.Open);
+        ClosedTradeInfos = await TradeService.GetTradesAsync(Category.Closed);
+        FailedTradeInfos = await TradeService.GetTradesAsync(Category.Failed);
+
+        Disputes = await DisputeService.GetDisputesAsync();
 
         NotificationSingleton.OnChatMessage += HandleChatMessage;
         NotificationSingleton.OnTradeUpdate += HandleTradeUpdate;
@@ -85,11 +81,6 @@ public partial class Trades : ComponentBase, IDisposable
     public async Task GetDisputesAsync()
     {
         Disputes = await DisputeService.GetDisputesAsync();
-    }
-
-    public void GetDisputes()
-    {
-        Task.Run(GetDisputesAsync).GetAwaiter().GetResult();
     }
 
     public async void HandleChatMessage(ChatMessage chatMessage)

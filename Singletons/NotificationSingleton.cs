@@ -1,7 +1,7 @@
 ﻿using HavenoSharp.Models;
+using HavenoSharp.Services;
 using HavenoSharp.Singletons;
 using Manta.Services;
-using System.Collections.Concurrent;
 
 namespace Manta.Singletons;
 
@@ -9,22 +9,26 @@ public class NotificationSingleton
 {
     private readonly HavenoNotificationSingleton _havenoNotificationSingleton;
     private readonly INotificationManagerService _notificationManagerService;
+    private readonly IHavenoTradeService _havenoTradeService;
 
     public event Action<ChatMessage>? OnChatMessage;
     public event Action<TradeInfo>? OnTradeUpdate;
 
-    public ConcurrentDictionary<string, TradeInfo> TradeInfos => _havenoNotificationSingleton.TradeInfos;
     public TaskCompletionSource<bool> InitializedTCS => _havenoNotificationSingleton.IsInitialized;
 
-    public NotificationSingleton(INotificationManagerService notificationManagerService, HavenoNotificationSingleton havenoNotificationSingleton)
+    public NotificationSingleton(
+        INotificationManagerService notificationManagerService, 
+        HavenoNotificationSingleton havenoNotificationSingleton,
+        IHavenoTradeService havenoTradeService)
     {
         _notificationManagerService = notificationManagerService;
         _havenoNotificationSingleton = havenoNotificationSingleton;
+        _havenoTradeService = havenoTradeService;
 
         _havenoNotificationSingleton.NotificationMessageReceived += HandleNotificationMessageReceived;
     }
 
-    private void HandleNotificationMessageReceived(NotificationMessage notificationMessage)
+    private async void HandleNotificationMessageReceived(NotificationMessage notificationMessage)
     {
         switch (notificationMessage.Type)
         {
@@ -32,20 +36,14 @@ public class NotificationSingleton
                 {
                     OnChatMessage?.Invoke(notificationMessage.ChatMessage);
 
-                    if (TradeInfos.TryGetValue(notificationMessage.ChatMessage.TradeId, out var tradeInfo))
+                    var tradeInfo = await _havenoTradeService.GetTradeAsync(notificationMessage.ChatMessage.TradeId);
+                    if (notificationMessage.ChatMessage.Type == SupportType.Arbitration)
                     {
-                        if (notificationMessage.ChatMessage.Type == SupportType.Arbitration)
-                        {
-                            _notificationManagerService.SendNotification($"New message for trade {new string(notificationMessage.ChatMessage.TradeId.Split('-')[0].ToArray())}", notificationMessage.ChatMessage.Message, $"trades/{tradeInfo.TradeId}/chat?disputeTradeId={tradeInfo.TradeId}&title=Trade%20{tradeInfo.ShortId}%20dispute%20chat&arbitrator={tradeInfo.ArbitratorNodeAddress.Split(".")[0]}&tradePeer={tradeInfo.TradePeerNodeAddress.Split(".")[0]}&myAddress={tradeInfo.Offer.OwnerNodeAddress.Split(".")[0]}");
-                        }
-                        else
-                        {
-                            _notificationManagerService.SendNotification($"New message for trade {new string(notificationMessage.ChatMessage.TradeId.Split('-')[0].ToArray())}", notificationMessage.ChatMessage.Message, $"trades/{tradeInfo.TradeId}/chat?tradeId={tradeInfo.TradeId}&title=Trade%20{tradeInfo.ShortId}%20chat&arbitrator={tradeInfo.ArbitratorNodeAddress.Split(".")[0]}&tradePeer={tradeInfo.TradePeerNodeAddress.Split(".")[0]}&myAddress={tradeInfo.Offer.OwnerNodeAddress.Split(".")[0]}");
-                        }
+                        _notificationManagerService.SendNotification($"New message for trade {new string(notificationMessage.ChatMessage.TradeId.Split('-')[0].ToArray())}", notificationMessage.ChatMessage.Message, $"trades/{tradeInfo.TradeId}/chat?disputeTradeId={tradeInfo.TradeId}&title=Trade%20{tradeInfo.ShortId}%20dispute%20chat&arbitrator={tradeInfo.ArbitratorNodeAddress.Split(".")[0]}&tradePeer={tradeInfo.TradePeerNodeAddress.Split(".")[0]}&myAddress={tradeInfo.Offer.OwnerNodeAddress.Split(".")[0]}");
                     }
                     else
                     {
-                        _notificationManagerService.SendNotification($"New message for trade {new string(notificationMessage.ChatMessage.TradeId.Split('-')[0].ToArray())}", notificationMessage.ChatMessage.Message);
+                        _notificationManagerService.SendNotification($"New message for trade {new string(notificationMessage.ChatMessage.TradeId.Split('-')[0].ToArray())}", notificationMessage.ChatMessage.Message, $"trades/{tradeInfo.TradeId}/chat?tradeId={tradeInfo.TradeId}&title=Trade%20{tradeInfo.ShortId}%20chat&arbitrator={tradeInfo.ArbitratorNodeAddress.Split(".")[0]}&tradePeer={tradeInfo.TradePeerNodeAddress.Split(".")[0]}&myAddress={tradeInfo.Offer.OwnerNodeAddress.Split(".")[0]}");
                     }
                 }
                 break;

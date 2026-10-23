@@ -270,7 +270,7 @@ public partial class Offer : ComponentBase, IDisposable
 
             var response = await TradeService.TakeOfferAsync(takeOfferRequest);
 
-            NotificationSingleton.TradeInfos.TryAdd(response.Trade.TradeId, response.Trade);
+            //NotificationSingleton.TradeInfos.TryAdd(response.Trade.TradeId, response.Trade);
 
             NavigationManager.NavigateTo("Trades");
         }

@@ -250,9 +250,6 @@ public partial class Index : ComponentBase, IDisposable
                             return;
                         }
 
-                        // If restoring
-                        NotificationSingleton.TradeInfos.Clear();
-
                         await StartHavenoStandalone();
                     }
                     break;

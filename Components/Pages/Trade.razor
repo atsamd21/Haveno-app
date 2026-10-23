@@ -72,7 +72,7 @@
                     <div class="payment-instructions">
                         <p class="bold-p start-payment">Start payment using @TradeInfo.Offer.PaymentMethodShortName</p>
 
-                        <InfoRow Label="Amount to transfer" Value="@(TradeInfo.TradeVolume + " " + (IsFiat ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode))"></InfoRow>
+                        <InfoRow Label="Amount to transfer" Value="@(TradeInfo.TradeVolume + " " + (TradeInfo.Offer.IsFiat() ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode))"></InfoRow>
                         @foreach (var keyVal in TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.TakerPaymentAccountPayload.Convert() : TradeInfo.Contract.MakerPaymentAccountPayload.Convert())
                         {
                             <InfoRow IsExpandable="true" Label="@keyVal.Key" Value="@keyVal.Value"></InfoRow>
@@ -139,7 +139,7 @@
                         <div class="payment-instructions">
                             <p class="bold-p start-payment">Confirm payment receipt</p>
 
-                            <InfoRow Label="Amount to receive" Value="@(TradeInfo.TradeVolume + " " + (IsFiat ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode))"></InfoRow>
+                            <InfoRow Label="Amount to receive" Value="@(TradeInfo.TradeVolume + " " + (TradeInfo.Offer.IsFiat() ? TradeInfo.Offer.CounterCurrencyCode : TradeInfo.Offer.BaseCurrencyCode))"></InfoRow>
                             @* <InfoRow Label="Your trading account" Value="@(TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.MakerAccountId : TradeInfo.Contract.TakerAccountId)"></InfoRow> *@
 
                             <InfoRow IsExpandable=true Label="Peer account info" Value="@((TradeInfo.Offer.PaymentMethodShortName) + " - " + string.Join(", ", (TradeInfo.Offer.IsMyOffer ? TradeInfo.Contract.TakerPaymentAccountPayload.Convert() : TradeInfo.Contract.MakerPaymentAccountPayload.Convert()).Select(x => x.Key + ": " + x.Value)))"></InfoRow>
@@ -172,7 +172,7 @@
                 </div>
                 <p>Payment method: @TradeInfo.Offer.PaymentMethodShortName</p>
                 <div class="amount-info">
-                    <p>Amount: @TradeInfo.Amount.ToMonero() @(IsFiat ? "XMR" : TradeInfo.Offer.BaseCurrencyCode) / @TradeInfo.TradeVolume @TradeInfo.Offer.CounterCurrencyCode</p>
+                    <p>Amount: @TradeInfo.Amount.ToMonero() XMR / @TradeInfo.TradeVolume @TradeInfo.Offer.CounterCurrencyCode</p>
                     <p>Price: @decimal.Parse(TradeInfo.Price, CultureInfo.InvariantCulture).ToString(TradeInfo.Offer.PaymentMethodId == "BLOCK_CHAINS" ? "0.0000####" : "0.0000") @TradeInfo.Offer.CounterCurrencyCode</p>
                 </div>
                 <br />

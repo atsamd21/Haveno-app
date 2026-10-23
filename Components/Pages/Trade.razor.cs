@@ -4,7 +4,6 @@ using Manta.Extensions;
 using Manta.Models;
 using Manta.Singletons;
 using Microsoft.AspNetCore.Components;
-using System.Text.Json;
 
 namespace Manta.Components.Pages;
 
@@ -35,7 +34,6 @@ public partial class Trade : ComponentBase, IDisposable
     public TimeSpan MaxTradePeriod { get; set; }
     public DateTime TradeExpiresDateUTC { get; set; }
     public bool IsFetching { get; set; }
-    public bool IsFiat { get; set; }
     public bool ShowMyAccountInfo { get; set; }
     public bool ShowMoreTradeInfo { get; set; }
 
@@ -51,82 +49,52 @@ public partial class Trade : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        while (true)
+        TradeInfo = await TradeService.GetTradeAsync(TradeId);
+
+        if (PaymentMethod is null)
         {
-            try
-            {
-                var tradeInfo = NotificationSingleton.TradeInfos[TradeId];
-                if (tradeInfo is null)
-                {
-                    // Try to fetch it or something, if that fails navigate back
-                }
-
-                TradeInfo = tradeInfo!;
-                IsFiat = TradeInfo.Offer.BaseCurrencyCode == "XMR";
-
-                if (PaymentMethod is null)
-                {
-                    var paymentMethods = await PaymentAccountService.GetPaymentMethodsAsync();
-                    PaymentMethod = paymentMethods.FirstOrDefault(x => x.Id == TradeInfo.Offer.PaymentMethodId);
-                }
-
-                if (PaymentMethod is not null)
-                {
-                    MaxTradePeriod = new TimeSpan(PaymentMethod.MaxTradePeriod * 10_000);
-
-                    // This is wrong, should be from the time of the first blockchain conf
-                    //TradeExpiresDateUTC = TradeInfo.Date.ToDateTime().Add(MaxTradePeriod);
-
-                    if (long.TryParse(TradeInfo.DeadlineTime, out var deadlineTimeout))
-                    {
-                        TradeExpiresDateUTC = deadlineTimeout.ToDateTime();
-                    }
-
-                    // Really only need to do this if trade is not completed - fix 
-                    var utcNow = DateTime.UtcNow;
-
-                    if (utcNow >= TradeExpiresDateUTC)
-                    {
-                        IsNotCompletedInTime = true;
-                    }
-                    else
-                    {
-                        _ = Task.Run(async () => {
-                            await Task.Delay(TradeExpiresDateUTC.Subtract(utcNow));
-
-                            IsNotCompletedInTime = true;
-
-                            await InvokeAsync(StateHasChanged);
-                        });
-                    }
-                }
-
-                UpdateTradeState();
-
-                NotificationSingleton.OnTradeUpdate += HandleTradeUpdate;
-
-                FetchTradeTask = FetchTradeAsync();
-                break;
-            }
-            catch (Exception)
-            {
-
-            }
-
-            await Task.Delay(5_000);
+            var paymentMethods = await PaymentAccountService.GetPaymentMethodsAsync();
+            PaymentMethod = paymentMethods.FirstOrDefault(x => x.Id == TradeInfo.Offer.PaymentMethodId);
         }
 
+        if (PaymentMethod is not null)
+        {
+            MaxTradePeriod = new TimeSpan(PaymentMethod.MaxTradePeriod * 10_000);
+
+            if (long.TryParse(TradeInfo.DeadlineTime, out var deadlineTimeout))
+            {
+                TradeExpiresDateUTC = deadlineTimeout.ToDateTime();
+            }
+
+            // Really only need to do this if trade is not completed - fix 
+            var utcNow = DateTime.UtcNow;
+
+            if (utcNow >= TradeExpiresDateUTC)
+            {
+                IsNotCompletedInTime = true;
+            }
+            else
+            {
+                _ = Task.Run(async () => {
+                    await Task.Delay(TradeExpiresDateUTC.Subtract(utcNow));
+
+                    IsNotCompletedInTime = true;
+
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+        }
+
+        UpdateTradeState();
+
+        NotificationSingleton.OnTradeUpdate += HandleTradeUpdate;
+
+        FetchTradeTask = FetchTradeAsync();
         await base.OnInitializedAsync();
     }
 
     private void UpdateTradeState()
     {
-        // Stupid hack but IsMyOffer is always false, will have to fix this
-        if (TradeInfo.Offer.OwnerNodeAddress != TradeInfo.TradePeerNodeAddress)
-        {
-            TradeInfo.Offer.IsMyOffer = true;
-        }
-
         IsBuyer = (TradeInfo.Offer.IsMyOffer && TradeInfo.Offer.Direction == "BUY") || (!TradeInfo.Offer.IsMyOffer && TradeInfo.Offer.Direction == "SELL");
 
         switch (TradeInfo.DisputeState) 
@@ -204,7 +172,7 @@ public partial class Trade : ComponentBase, IDisposable
         await InvokeAsync(() => {
             try
             {
-                TradeInfo = NotificationSingleton.TradeInfos[TradeId];
+                TradeInfo = tradeInfo;
                 UpdateTradeState();
                 StateHasChanged();
             }
@@ -221,13 +189,6 @@ public partial class Trade : ComponentBase, IDisposable
 
         await TradeService.ConfirmPaymentReceivedAsync(tradeId);
 
-        //var trade = await TradeService.GetTradeAsync(tradeId);
-
-        //NotificationSingleton.TradeInfos.AddOrUpdate(tradeId, trade, (key, old) => trade);
-        //TradeInfo = trade;
-
-        //UpdateTradeState();
-
         IsFetching = false;
     }
 
@@ -237,12 +198,7 @@ public partial class Trade : ComponentBase, IDisposable
 
         await TradeService.ConfirmPaymentSentAsync(tradeId);
 
-        //var trade = await TradeService.GetTradeAsync(tradeId);
-
-        //NotificationSingleton.TradeInfos.AddOrUpdate(tradeId, trade, (key, old) => trade);
-        //TradeInfo = trade;
-
-        //UpdateTradeState();
+        await Task.Delay(2000);
 
         IsFetching = false;
     }
@@ -250,11 +206,6 @@ public partial class Trade : ComponentBase, IDisposable
     public async Task CompleteTradeAsync(string tradeId)
     {
         await TradeService.CompleteTradeAsync(tradeId);
-
-        var cloneTradeInfo = JsonSerializer.Deserialize<TradeInfo>(JsonSerializer.Serialize(TradeInfo))!;
-        cloneTradeInfo.IsCompleted = true;
-        NotificationSingleton.TradeInfos.TryUpdate(TradeId, cloneTradeInfo, TradeInfo);
-
         NavigationManager.NavigateTo("Trades");
     }
 
@@ -267,14 +218,9 @@ public partial class Trade : ComponentBase, IDisposable
             {
                 await PauseTokenSource.WaitWhilePausedAsync();
 
-                var trade = await TradeService.GetTradeAsync(TradeId, cancellationToken: CancellationTokenSource.Token);
-
-                if (NotificationSingleton.TradeInfos.TryUpdate(TradeId, trade, TradeInfo))
-                {
-                    TradeInfo = trade;
-                    UpdateTradeState();
-                    StateHasChanged();
-                }
+                TradeInfo = await TradeService.GetTradeAsync(TradeId, cancellationToken: CancellationTokenSource.Token);
+                UpdateTradeState();
+                StateHasChanged();
             }
             catch (OperationCanceledException)
             {
@@ -285,7 +231,7 @@ public partial class Trade : ComponentBase, IDisposable
                 Console.WriteLine(e);
             }
 
-            await Task.Delay(1_500, CancellationTokenSource.Token);
+            await Task.Delay(5_000, CancellationTokenSource.Token);
         }
     }
 
