@@ -26,4 +26,9 @@ public static class OfferHelper
     {
         return (ulong)(offerInfo.Amount * (offerInfo.GetTakerDepositPercent()));
     }
+
+    public static bool IsFiat(this OfferInfo offerInfo)
+    {
+        return offerInfo.PaymentMethodId != "BLOCK_CHAINS" && offerInfo.PaymentMethodId != "BLOCK_CHAINS_INSTANT";
+    }
 }
