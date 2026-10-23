@@ -20,24 +20,7 @@ public partial class MyOffers : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        while (true)
-        {
-            try
-            {
-                Offers = await OfferService.GetMyOffersAsync("", "");
-
-                // Why does this not get set?
-                Offers.ForEach(x => x.IsMyOffer = true);
-
-                break;
-            }
-            catch
-            {
-
-            }
-
-            await Task.Delay(5_000);
-        }
+        Offers = await OfferService.GetMyOffersAsync("", "");
 
         await base.OnInitializedAsync();
     }
