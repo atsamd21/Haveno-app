@@ -15,7 +15,7 @@
     <!-- CHANGE THESE -->
     <ApplicationTitle>Haveno</ApplicationTitle>
     <ApplicationId>com.haveno</ApplicationId>
-    <DaemonUrl>https://github.com/atsamd21/haveno/releases/download/v1.8.0</DaemonUrl>
+    <DaemonUrl>https://github.com/atsamd21/haveno/releases/download/v1.11.0</DaemonUrl>
     <Network>XMR_STAGENET</Network>
     <HavenoAppName>haveno-dev</HavenoAppName>
     <SimplexLink>https://smp4.simplex.im/g#hr4lvFeBmndWMKTwqiodPz3VBo_6UmdGWocXd1SupsM</SimplexLink>
