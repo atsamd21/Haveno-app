@@ -5,7 +5,6 @@ using Android.Runtime;
 using AndroidX.Core.App;
 using Manta.Helpers;
 using Manta.Models;
-using System.Net.Sockets;
 using System.Text;
 
 namespace Manta.Services;
@@ -21,9 +20,6 @@ public class BackendService : Service
     private CancellationTokenSource? _torCts;
     private CancellationTokenSource? _daemonCts;
     private TaskCompletionSource? _torReadyTCS;
-
-    private Task? _torTask;
-    private Task? _daemonTask;
 
     public BackendService()
     {
@@ -99,6 +95,7 @@ public class BackendService : Service
         switch (intent.Action)
         {
             case "ACTION_STOP_BACKEND":
+                ShowNotification();
                 StopBackend();
                 break;
             case "ACTION_START_BACKEND":
@@ -154,13 +151,13 @@ public class BackendService : Service
         {
             _torReadyTCS = new();
 
-            _torTask = Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(() =>
             {
                 _torCts = new();
 
                 try
                 {
-                    using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token, "--dasd");
+                    using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token);
 
                     string? lastWarn = null;
 
@@ -220,9 +217,9 @@ public class BackendService : Service
             }, TaskCreationOptions.LongRunning);
         }
 
-        _daemonTask = Task.Factory.StartNew(async () =>
+        Task.Factory.StartNew(async () =>
         {
-            if (_torTask is not null)
+            if (_torReadyTCS is not null)
                 await _torReadyTCS.Task;
 
             UpdateProgress("Starting daemon");
@@ -265,20 +262,14 @@ public class BackendService : Service
 #if DEBUG
                     Console.WriteLine(line);
 #endif
-                    if (line.Contains("Init wallet") || line.Contains("Interactive login required"))
+                    if (line.Contains("fatal error:") || line.Contains("proot error:"))
+                    {
+                        throw new Exception(line);
+                    }
+                    else if (line.Contains("Init wallet") || line.Contains("Interactive login required"))
                     {
                         UpdateProgress("Initializing wallet", true);
                     }
-                    /*
-                    else if (line.Contains("All connections lost"))
-                    {
-
-                    }
-                    else if (line.Contains("Established a new connection from/to"))
-                    {
-
-                    }
-                    */
                 }
             }
             catch (Exception e)
@@ -293,11 +284,9 @@ public class BackendService : Service
     private void StopBackend()
     {
         _daemonCts?.Cancel();
-        _daemonTask?.Wait();
         _daemonCts?.Dispose();
 
         _torCts?.Cancel();
-        _torTask?.Wait();
         _torCts?.Dispose();
 
         SendBroadcast(new Intent($"{AppConstants.ApplicationId}.BACKEND_EXIT").SetPackage(Android.App.Application.Context.PackageName));

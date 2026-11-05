@@ -38,6 +38,7 @@
 }
 .loader-text-container {
   display: flex;
+  margin-bottom: 10px;
 }
 
 .init-text-top {
@@ -51,4 +52,8 @@ button {
 ::deep .installation-error-text {
   white-space: pre-wrap;
   line-break: anywhere;
+}
+
+::deep .start-error-message {
+  margin-bottom: 10px;
 }

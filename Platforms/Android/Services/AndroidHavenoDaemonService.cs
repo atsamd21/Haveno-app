@@ -153,11 +153,10 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
         {
             await receiver.CompletedTCS.Task;
         }
-        catch
+        finally
         {
             receiver.OnProgressChanged -= progressCb;
             Platform.AppContext.UnregisterReceiver(receiver);
-            throw;
         }
 
         _notificationSingleton.Start();
@@ -172,10 +171,31 @@ public class AndroidHavenoDaemonService : HavenoDaemonServiceBase
 
     public override async Task StopHavenoDaemonAsync()
     {
-        var stopBackendIntent = new Intent(Platform.AppContext, typeof(BackendService))
-                        .SetAction("ACTION_STOP_BACKEND");
+        var filter = new IntentFilter($"{AppConstants.ApplicationId}.BACKEND_EXIT");
+        var receiver = new ProgressReceiver();
 
-        Platform.AppContext.StartService(stopBackendIntent);
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            Platform.AppContext.RegisterReceiver(receiver, filter, ReceiverFlags.NotExported);
+        }
+        else
+        {
+            Platform.AppContext.RegisterReceiver(receiver, filter);
+        }
+
+        var stopBackendIntent = new Intent(Platform.AppContext, typeof(BackendService)).SetAction("ACTION_STOP_BACKEND");
+        ContextCompat.StartForegroundService(Platform.AppContext, stopBackendIntent);
+
+        try
+        {
+            await receiver.CompletedTCS.Task;
+        }
+        catch (TaskCanceledException)
+        {
+
+        }
+
+        Platform.AppContext.UnregisterReceiver(receiver);
 
         await _notificationSingleton.StopNotificationListenerAsync();
     }
