@@ -28,6 +28,11 @@ public class NotificationSingleton
         _havenoNotificationSingleton.NotificationMessageReceived += HandleNotificationMessageReceived;
     }
 
+    public async Task<Alert> GetAlertAsync(CancellationToken cancellationToken = default)
+    {
+        return await _havenoNotificationSingleton.GetAlertAsync(cancellationToken);
+    }
+
     private async void HandleNotificationMessageReceived(NotificationMessage notificationMessage)
     {
         switch (notificationMessage.Type)
