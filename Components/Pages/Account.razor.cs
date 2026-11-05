@@ -104,6 +104,10 @@ public partial class Account : ComponentBase
             {
                 CopyFromField = PaymentAccountForm.Fields.FirstOrDefault(x => x.Id == fieldId);
             }
+            else
+            {
+                AccountNameField?.Value = TraditionalPaymentMethodStrings[SelectedPaymentMethodId];
+            }
 
             var acceptedCountriesField = PaymentAccountForm.Fields.FirstOrDefault(x => x.Id == FieldId.ACCEPTED_COUNTRY_CODES);
             if (acceptedCountriesField is not null)
