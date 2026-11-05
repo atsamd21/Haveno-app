@@ -4,7 +4,7 @@ namespace Manta.Helpers;
 
 public static class AppPreferences
 {
-    public const string PreferencesInitialized = "preferences-initialized";
+    public const string PreferencesInitialized = "preferences-initialized-2";
     //
     public const string PreferredCurrency = "preferred-currency";
     public const string UseNativeXmrWallet = "use-native-xmr-wallet";

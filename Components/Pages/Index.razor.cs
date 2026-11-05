@@ -183,6 +183,7 @@ public partial class Index : ComponentBase, IDisposable
             return;
 
         AppPreferences.Set(AppPreferences.PreferredCurrency, Currency.USD);
+        AppPreferences.Set(AppPreferences.UseNativeXmrWallet, true);
         AppPreferences.Set(AppPreferences.PreferencesInitialized, true);
     }
 
