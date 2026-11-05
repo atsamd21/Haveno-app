@@ -20,6 +20,7 @@ public class BackendService : Service
 
     private CancellationTokenSource? _torCts;
     private CancellationTokenSource? _daemonCts;
+    private TaskCompletionSource? _torReadyTCS;
 
     private Task? _torTask;
     private Task? _daemonTask;
@@ -148,8 +149,82 @@ public class BackendService : Service
         var havenoDaemonService = serviceProvider.GetRequiredService<IHavenoDaemonService>();
         var daemonPath = havenoDaemonService.GetDaemonPath();
 
+        var useHavenoTor = AppPreferences.Get<bool>(AppPreferences.UseHavenoTor);
+        if (!useHavenoTor)
+        {
+            _torReadyTCS = new();
+
+            _torTask = Task.Factory.StartNew(() =>
+            {
+                _torCts = new();
+
+                try
+                {
+                    using var streamReader = Proot.RunProotUbuntuCommand("tor", _torCts.Token, "--dasd");
+
+                    string? lastWarn = null;
+
+                    string? line;
+                    while (!_torCts.IsCancellationRequested && (line = streamReader.ReadLine()) is not null)
+                    {
+#if DEBUG
+                        Console.WriteLine(line);
+#endif
+                        if (line.Contains("[warn]"))
+                            lastWarn = line;
+
+                        if (line.Contains("[err]"))
+                            throw new Exception($"Tor failed to start with error: {line}. Warning: {lastWarn}");
+
+                        int lastPercentage = 0;
+                            
+                        for (int i = 0; i < line.Length; i++)
+                        {
+                            if (line[i] == '%')
+                            {
+                                StringBuilder stringBuilder = new();
+                                for (int j = i - 1; j > 0; j--)
+                                {
+                                    if (line[j] > '9' || line[j] < '0')
+                                        break;
+
+                                    stringBuilder.Append(line[j]);
+                                }
+
+                                if (stringBuilder.Length > 0)
+                                {
+                                    var percentage = int.Parse(stringBuilder.ToString().Reverse().ToArray());
+
+                                    if (percentage > lastPercentage)
+                                    {
+                                        lastPercentage = percentage;
+
+                                        UpdateProgress($"Tor bootstrapping: {percentage}%");
+
+                                        if (percentage == 100)
+                                        {
+                                            _torReadyTCS.SetResult();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    UpdateException(e);
+                    StopBackend();
+                    throw;
+                }
+            }, TaskCreationOptions.LongRunning);
+        }
+
         _daemonTask = Task.Factory.StartNew(async () =>
         {
+            if (_torTask is not null)
+                await _torReadyTCS.Task;
+
             UpdateProgress("Starting daemon");
 
             _daemonCts = new();
@@ -180,6 +255,8 @@ public class BackendService : Service
                     $"--apiPassword={password}", 
                     "--apiPort=3201", 
                     "--passwordRequired=true", 
+                    useHavenoTor ? "" : "--torControlHost=127.0.0.1",
+                    useHavenoTor ? "" : "--torControlPort=9061",
                     $"--useNativeXmrWallet={AppPreferences.Get<bool>(AppPreferences.UseNativeXmrWallet).ToString().ToLowerInvariant()}");
 
                 string? line;
@@ -206,8 +283,8 @@ public class BackendService : Service
             }
             catch (Exception e)
             {
-                StopBackend();
                 UpdateException(e);
+                StopBackend();
                 throw;
             }
         }, TaskCreationOptions.LongRunning);

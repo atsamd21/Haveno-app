@@ -23,6 +23,8 @@ public static class AppPreferences
 
     public const string RootfsVersion = "rootfs-version";
 
+    public const string UseHavenoTor = "use-haveno-tor";
+
     /// <summary>
     /// Note: value types will not return a null value.
     /// </summary>
