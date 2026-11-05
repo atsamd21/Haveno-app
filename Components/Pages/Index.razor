@@ -67,24 +67,26 @@
 <Modal IsOpen="IsDaemonStartInfoModalOpen || DaemonStartInfo != string.Empty" Title="Initializing" ModalButtonOptions="ModalButtonOptions.NONE" IsCloseable="false">
     @if (string.IsNullOrEmpty(StartErrorMessage))
     {
-        <p class="regular-p-grey init-text-top">Haveno is starting, please wait</p>
-        <div class="loader-text-container">
-            <span class="loader"></span>
-            <p class="regular-p-grey init-text">@DaemonStartInfo</p>
+        <div>
+            <p class="regular-p-grey init-text-top">Haveno is starting, please wait</p>
+            <div class="loader-text-container">
+                <span class="loader"></span>
+                <p class="regular-p-grey init-text">@DaemonStartInfo</p>
+            </div>
+            <Toggle OnToggledChanged="HandleUseHavenoTorToggle" IsToggled="AppPreferences.Get<bool>(AppPreferences.UseHavenoTor)" Text="Use Haveno's Tor process" />
+            <p class="note">Use this if the application fails to start.</p>
+            @if (DaemonStartInfo == "Initializing wallet")
+            {
+                <button class="button-submit" @onclick="@(() => { InitializingTokenSource?.Cancel(); NavigationManager.NavigateTo("/Market"); })">Skip initialization</button>
+            }
         </div>
-        <Toggle OnToggledChanged="HandleUseHavenoTorToggle" IsToggled="AppPreferences.Get<bool>(AppPreferences.UseHavenoTor)" Text="Use Haveno's Tor process" />
-        <p class="note">If the application fails to start, try using Haveno's Tor process.</p>
-        @if (DaemonStartInfo == "Initializing wallet")
-        {
-            <button class="button-submit" @onclick="@(() => { InitializingTokenSource?.Cancel(); NavigationManager.NavigateTo("/Market"); })">Skip initialization</button>
-        }
     }
     else
     {
         <div>
             <p class="start-error-message">@StartErrorMessage</p>
             <Toggle OnToggledChanged="HandleUseHavenoTorToggle" IsToggled="AppPreferences.Get<bool>(AppPreferences.UseHavenoTor)" Text="Use Haveno's Tor process" />
-            <p class="note">If the application fails to start, try using Haveno's Tor process.</p>
+            <p class="note">Use this if the application fails to start.</p>
         </div>
     }
 </Modal>
