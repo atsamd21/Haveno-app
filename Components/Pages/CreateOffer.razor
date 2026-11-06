@@ -86,12 +86,11 @@
             <input readonly="@(UseFixedPrice)" type="number" @bind="MarketPriceMarginPct" @onblur="@(() => Calculate(MarketPriceMarginPct, "MarketPriceMarginPct"))" />            
         }
 
-
-@*         if (!UseFixedPrice)
+        if (!UseFixedPrice)
         {
             <label>Deactive offer if @(Direction == "BUY" ? "above" : "below")</label>
-            <input readonly="@true" type="number" @bind="TriggerAmount" />
-        } *@
+            <input type="number" @bind="TriggerAmount" />
+        }
 
         <label>Amount in @(SelectedCurrencyCode) to @(Direction == "BUY" ? "spend" : "receive")</label>
         <input type="number" @bind="FiatPrice" @onblur="@(() => Calculate(FiatPrice, "FiatPrice"))" />
