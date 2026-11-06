@@ -1,0 +1,125 @@
+﻿@using HavenoSharp.Services
+@inject IHavenoOfferService OfferService
+@inject BalanceSingleton BalanceSingleton
+@inject NavigationManager NavigationManager
+@inject IHavenoPaymentAccountService PaymentAccountService
+
+<Modal Title="Offer info"
+       @bind-IsOpen="ShowExtraInfoModal"
+       ModalButtonOptions="@(OfferInfo?.State == "AVAILABLE" || OfferInfo?.State == "DEACTIVATED" ? ModalButtonOptions.OK_CANCEL : ModalButtonOptions.CANCEL)"
+       OkButtonText="@(OfferInfo?.State == "AVAILABLE" ? "Deactivate offer" : OfferInfo?.State == "DEACTIVATED" ? "Activate offer" : "")"
+       OnOkPressed="@(OfferInfo?.State == "AVAILABLE" ? async () => await DeactivateOffer() : OfferInfo?.State == "DEACTIVATED" ? async () => await ActivateOffer() : () => {})"
+       CancelButtonText="Close">
+    <div style="max-height: 60vh;overflow-y: auto;">
+        @if (OfferInfo is not null)
+        {
+            <p>Offer ID: @OfferInfo.Id</p>
+            <p>Trading account: @PaymentAccount?.AccountName</p>
+            @if (decimal.Parse(OfferInfo.TriggerPrice) != 0)
+            {
+                <p>Trigger price: @decimal.Parse(OfferInfo.TriggerPrice).ToString(OfferInfo.IsFiat() ? "0.0000" : "0.00000000") @OfferInfo.CounterCurrencyCode</p>
+            }
+            
+            if (!string.IsNullOrEmpty(OfferInfo.Challenge))
+            {
+                <p>Passphrase</p>
+                <div class="extra-info">
+                    <p class="regular-p-grey">@OfferInfo.Challenge</p>
+                    <img class="copy-icon" @onclick="@(async () => await Clipboard.Default.SetTextAsync(OfferInfo.Challenge))" src="icons/copy.svg" />
+                </div>
+            }
+        }
+    </div>
+</Modal>
+
+<li class="offer">
+    <div class="offer-top">
+        <div class="offer-top-left">
+            <div class="info-container" @onclick="() => { OfferInfo = Offer; ShowExtraInfoModal = true; }">
+                <img src="icons/info.svg" class="info" />
+                <p>@Offer.State</p>
+            </div>
+            <div class="base-amounts">
+                <p>
+                    @Offer.CounterCurrencyCode
+                    @(" ")
+                    @{
+                        var minVolume = double.Parse(Offer.MinVolume, CultureInfo.InvariantCulture);
+                        var volume = double.Parse(Offer.Volume, CultureInfo.InvariantCulture);
+
+                        if (minVolume == volume)
+                        {
+                            @(Math.Round(volume, 8) + " ")
+                        }
+                        else
+                        {
+                            @($"{Math.Round(minVolume, 8)} - {Math.Round(volume, 8)} ")
+                        }
+                    }
+                </p>
+            </div>
+            <div class="counter-amounts">
+                <p>@Offer.BaseCurrencyCode</p>
+                <div class="xmr-icon"></div>
+                <p>@(Offer.Amount == Offer.MinAmount ? $"{Offer.Amount.ToMonero()}" : $"{Offer.MinAmount.ToMonero()} - {Offer.Amount.ToMonero()}")</p>
+            </div>
+        </div>
+        <div class="offer-top-right">
+            <p>@Offer.PaymentMethodShortName</p>
+            <div class="amounts">
+                @if (Offer.UseMarketBasedPrice)
+                {
+                    <i class="bi bi-graph-up"></i>
+                }
+                else
+                {
+                    <i class="bi bi-lock-fill"></i>
+                }
+                @(Math.Round(double.Parse(Offer.Price, CultureInfo.InvariantCulture), (Offer.PaymentMethodId == "BLOCK_CHAINS" ? 8 : 2)))
+                @Offer.CounterCurrencyCode
+                (@(Math.Round(Offer.UseMarketBasedPrice ? (Offer.MarketPriceMarginPct * 100) : ((float)BalanceSingleton.GetFixedPricePercentage(Offer.CounterCurrencyCode, Offer.Price, Offer.Direction)), 2).ToString("0.00"))%)
+            </div>
+            <div class="direction">
+                @(Offer.Direction + "ING") @Offer.BaseCurrencyCode
+            </div>
+        </div>
+    </div>
+    <div class="buttons">
+        <button @onclick="EditOffer">Edit</button>
+        <button class="button-grey" @onclick="() => CancelOfferAsync(Offer.Id)">Remove</button>
+    </div>
+</li>
+
+@code {
+    [Parameter, EditorRequired]
+    public OfferInfo Offer { get; set; }
+    [Parameter, EditorRequired]
+    public PaymentAccount? PaymentAccount { get; set; }
+
+    public OfferInfo? OfferInfo { get; set; }
+
+    public bool ShowExtraInfoModal { get; set; }
+
+    public async Task CancelOfferAsync(string id)
+    {
+        await OfferService.CancelOfferAsync(id);
+        NavigationManager.NavigateTo("buysell/myoffers?title=My%20Offers", true);
+    }
+
+    public async Task ActivateOffer()
+    {
+        await OfferService.ActivateOffer(Offer.Id);
+        NavigationManager.NavigateTo("buysell/myoffers?title=My%20Offers", true);
+    }
+
+    public async Task DeactivateOffer()
+    {
+        await OfferService.DeactivateOffer(Offer.Id);
+        NavigationManager.NavigateTo("buysell/myoffers?title=My%20Offers", true);
+    }
+
+    public void EditOffer()
+    {
+        NavigationManager.NavigateTo("/editoffer?title=Edit");
+    }
+}

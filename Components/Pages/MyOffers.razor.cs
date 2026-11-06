@@ -13,14 +13,19 @@ public partial class MyOffers : ComponentBase
     public NavigationManager NavigationManager { get; set; } = default!;
     [Inject]
     public BalanceSingleton BalanceSingleton { get; set; } = default!;
+    [Inject]
+    public IHavenoPaymentAccountService PaymentAccountService { get; set; } = default!;
     public List<OfferInfo> Offers { get; set; } = [];
+    public List<PaymentAccount> PaymentAccounts { get; set; } = [];
 
     public OfferInfo? OfferInfo { get; set; }
     public bool ShowExtraInfoModal { get; set; }
+    public int TabIndex { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         Offers = await OfferService.GetMyOffersAsync("", "");
+        PaymentAccounts = await PaymentAccountService.GetPaymentAccountsAsync();
 
         await base.OnInitializedAsync();
     }

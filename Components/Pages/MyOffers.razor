@@ -12,14 +12,14 @@
             <div class="extra-info">
                 <p class="regular-p-grey">@OfferInfo?.Challenge</p>
                 <img class="copy-icon" @onclick="@(async () => await Clipboard.Default.SetTextAsync(OfferInfo?.Challenge))" src="icons/copy.svg" />
-            </div>            
+            </div>
         }
     </div>
 </Modal>
 
 <div class="my-offers-main">
     <div class="tab-container">
-        <Tabs TabNames="@(["All", "Active", "Inactive"])" DisabledTabNames="@(["Active", "Inactive"])"></Tabs>
+        <Tabs @bind-SelectedTabIndex="TabIndex" TabNames="@(["All", "Active", "Inactive"])"></Tabs>
     </div>
 
     @if (Offers.Count == 0)
@@ -29,97 +29,26 @@
     else
     {
         <ul class="offers">
-            @foreach (var offer in Offers)
+            @switch (TabIndex)
             {
-                <li class="offer">
-                    @if (!string.IsNullOrEmpty(offer.Challenge))
+                case 0:
+                    foreach (var offer in Offers)
                     {
-                        <div class="info-container" @onclick="() => { OfferInfo = offer; ShowExtraInfoModal = true; }">
-                            <img src="icons/info.svg" class="info" />
-                            <p>Passphrase</p>
-                        </div>
+                        <MyOffer Offer="offer" PaymentAccount="PaymentAccounts.FirstOrDefault(x => x.Id == offer.PaymentAccountId)"></MyOffer>
                     }
-                    <div class="offer-top">
-                        <div class="offer-top-left">
-                            @if (offer.BaseCurrencyCode == "XMR")
-                            {
-                                <div class="base-amounts">
-                                    <p>
-                                        @offer.CounterCurrencyCode
-                                        @(" ")
-                                        @{
-                                            var minVolume = double.Parse(offer.MinVolume, CultureInfo.InvariantCulture);
-                                            var volume = double.Parse(offer.Volume, CultureInfo.InvariantCulture);
-
-                                            if (minVolume == volume)
-                                            {
-                                                @(Math.Round(volume, 8) + " ")
-                                            }
-                                            else
-                                            {
-                                                @($"{Math.Round(minVolume, 8)} - {Math.Round(volume, 8)} ")
-                                            }
-                                        }
-                                    </p>
-                                </div>
-                                <div class="counter-amounts">
-                                    <p>@offer.BaseCurrencyCode</p>
-                                    <div class="xmr-icon"></div>
-                                    <p>@(offer.Amount == offer.MinAmount ? $"{offer.Amount.ToMonero()}" : $"{offer.MinAmount.ToMonero()} - {offer.Amount.ToMonero()}")</p>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="base-amounts">
-                                    <p>@offer.BaseCurrencyCode
-                                    @(" ")
-                                    @{
-                                        var minVolume = double.Parse(offer.MinVolume, CultureInfo.InvariantCulture);
-                                        var volume = double.Parse(offer.Volume, CultureInfo.InvariantCulture);
-
-                                        if (minVolume == volume)
-                                        {
-                                            @(Math.Round(volume, 8) + " ")
-                                        }
-                                        else
-                                        {
-                                            @($"{Math.Round(minVolume, 8)} - {Math.Round(volume, 8)} ")
-                                        }
-                                    }
-                                    </p>
-                                </div>
-                                <div class="counter-amounts">
-                                    <p>@offer.CounterCurrencyCode</p>
-                                    <div class="xmr-icon"></div>
-                                    <p>@(offer.Amount == offer.MinAmount ? $"{offer.Amount.ToMonero()}" : $"{offer.MinAmount.ToMonero()} - {offer.Amount.ToMonero()}")</p>
-                                </div>
-                            }
-                        </div>
-                        <div class="offer-top-right">
-                            <p>@offer.PaymentMethodShortName</p>
-                            <div class="amounts">
-                                @if (offer.UseMarketBasedPrice)
-                                {
-                                    <i class="bi bi-graph-up"></i>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-lock-fill"></i>
-                                }
-                                @(Math.Round(double.Parse(offer.Price, CultureInfo.InvariantCulture), (offer.PaymentMethodId == "BLOCK_CHAINS" ? 8 : 2)))
-                                @offer.CounterCurrencyCode
-                                (@(Math.Round(offer.UseMarketBasedPrice ? (offer.MarketPriceMarginPct * 100) : ((float)BalanceSingleton.GetFixedPricePercentage(offer.CounterCurrencyCode, offer.Price, offer.Direction)), 2).ToString("0.00"))%)
-                            </div>
-                            <div class="direction">
-                                @(offer.Direction + "ING") @offer.BaseCurrencyCode
-                            </div>
-                        </div>
-                    </div>
-                    <div class="buttons">
-                        <button disabled @onclick="EditOffer">Edit</button>
-                        <button class="button-grey" @onclick="() => CancelOfferAsync(offer.Id)">Remove</button>
-                    </div>
-                </li>
+                    break;
+                case 1:
+                    foreach (var offer in Offers.Where(x => x.State == "AVAILABLE"))
+                    {
+                        <MyOffer Offer="offer" PaymentAccount="PaymentAccounts.FirstOrDefault(x => x.Id == offer.PaymentAccountId)"></MyOffer>
+                    }
+                    break;
+                case 2:
+                    foreach (var offer in Offers.Where(x => x.State == "DEACTIVATED"))
+                    {
+                        <MyOffer Offer="offer" PaymentAccount="PaymentAccounts.FirstOrDefault(x => x.Id == offer.PaymentAccountId)"></MyOffer>
+                    }
+                    break;
             }
         </ul>
     }
