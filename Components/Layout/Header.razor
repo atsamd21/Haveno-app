@@ -1,4 +1,5 @@
-﻿@implements IDisposable
+﻿@inject NotificationSingleton NotificationSingleton
+@implements IDisposable
 
 <div class="header-main">
     <h3>@_headerTitle</h3>
@@ -6,6 +7,23 @@
         <i class="bi bi-three-dots"></i>
     </NavLink>
 </div>
+
+<Modal IsOpen="Alert is not null"
+       Title="@(Alert?.IsUpdateInfo ?? false ? "Update available" : "Important information")"
+       ModalButtonOptions="ModalButtonOptions.CANCEL"
+       IsOpenChanged="(e) => { if (!e) Alert = null; }"
+       CancelButtonText="Close">
+    @if (Alert is not null)
+    {
+        <div>
+            <p>@Alert.Message</p>
+            @if (Alert.IsUpdateInfo)
+            {
+                <p>Version: @Alert.Version</p>
+            }
+        </div>
+    }
+</Modal>
 
 @code {
     private string _headerTitle = "Market";
@@ -17,11 +35,41 @@
 
     public bool IsMenuOpen { get; set; }
 
+    public Alert? Alert { get; set; }
+
     protected override void OnInitialized()
     {
         // Hack. When errorhandler rerenders this rerenders
         HandleLocationChanged(null, null);
         NavigationManager.LocationChanged += HandleLocationChanged;
+        NotificationSingleton.OnAlert += HandleAlert;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        try
+        {
+            var alert = await NotificationSingleton.GetAlertAsync();
+            HandleAlert(alert);
+        }
+        catch
+        {
+
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private void HandleAlert(Alert alert)
+    {
+        if (alert.SignatureAsBase64 != AppPreferences.Get<string>(AppPreferences.LastAlertSignature))
+        {
+            Alert = alert;
+            AppPreferences.Set(AppPreferences.LastAlertSignature, alert.SignatureAsBase64);
+
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task GoBack()
@@ -58,5 +106,6 @@
     public void Dispose()
     {
         NavigationManager.LocationChanged -= HandleLocationChanged;
+        NotificationSingleton.OnAlert -= HandleAlert;
     }
 }

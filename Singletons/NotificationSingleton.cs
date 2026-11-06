@@ -13,6 +13,7 @@ public class NotificationSingleton
 
     public event Action<ChatMessage>? OnChatMessage;
     public event Action<TradeInfo>? OnTradeUpdate;
+    public event Action<Alert>? OnAlert;
 
     public TaskCompletionSource<bool> InitializedTCS => _havenoNotificationSingleton.IsInitialized;
 
@@ -58,6 +59,11 @@ public class NotificationSingleton
 
                     var tradeInfo = notificationMessage.Trade;
                     _notificationManagerService.SendNotification($"Trade {tradeInfo.ShortId} updated", notificationMessage.Message, $"trades/{tradeInfo.TradeId}/trade?tradeId={tradeInfo.TradeId}&title=Trade%20{@tradeInfo.ShortId}");
+                }
+                break;
+            case (NotificationType)5:
+                {
+                    OnAlert?.Invoke(notificationMessage.Alert);
                 }
                 break;
             default: break;

@@ -25,6 +25,8 @@ public static class AppPreferences
 
     public const string UseHavenoTor = "use-haveno-tor";
 
+    public const string LastAlertSignature = "last-alert-signature";
+
     /// <summary>
     /// Note: value types will not return a null value.
     /// </summary>
