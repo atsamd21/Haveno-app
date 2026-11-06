@@ -188,7 +188,6 @@ public partial class Account : ComponentBase
             {
                 PaymentAccounts = await PaymentAccountService.GetPaymentAccountsAsync();
                 TraditionalPaymentMethods = await PaymentAccountService.GetPaymentMethodsAsync();
-                TraditionalPaymentMethods = TraditionalPaymentMethods.Where(x => x.Id != "AMAZON_GIFT_CARD").ToList();
 
                 var filteredPaymentMethodIds = TraditionalPaymentMethods
                     .Select(x => x.Id);
