@@ -110,5 +110,13 @@
   {
     "outputFile": "Components/Pages/SeedBackup.razor.css",
     "inputFile": "Components/Pages/SeedBackup.razor.scss"
+  },
+  {
+    "outputFile": "Components/Reusable/MyOffer.razor.css",
+    "inputFile": "Components/Reusable/MyOffer.razor.scss"
+  },
+  {
+    "outputFile": "Components/Pages/EditOffer.razor.css",
+    "inputFile": "Components/Pages/EditOffer.razor.scss"
   }
 ]
