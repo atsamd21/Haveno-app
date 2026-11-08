@@ -15,9 +15,9 @@
         {
             <p>Offer ID: @OfferInfo.Id</p>
             <p>Trading account: @PaymentAccount?.AccountName</p>
-            @if (decimal.Parse(OfferInfo.TriggerPrice) != 0)
+            @if (decimal.Parse(OfferInfo.TriggerPrice, CultureInfo.InvariantCulture) != 0)
             {
-                <p>Trigger price: @decimal.Parse(OfferInfo.TriggerPrice).ToString(OfferInfo.IsFiat() ? "0.0000" : "0.00000000") @OfferInfo.CounterCurrencyCode</p>
+                <p>Trigger price: @decimal.Parse(OfferInfo.TriggerPrice, CultureInfo.InvariantCulture).ToString(OfferInfo.IsFiat() ? "0.0000" : "0.00000000") @OfferInfo.CounterCurrencyCode</p>
             }
             
             if (!string.IsNullOrEmpty(OfferInfo.Challenge))
@@ -120,6 +120,6 @@
 
     public void EditOffer()
     {
-        NavigationManager.NavigateTo("/editoffer?title=Edit");
+        NavigationManager.NavigateTo($"/editoffer?title=Edit%20Offer%20{Offer.Id.Split("-")[0]}&OfferId={Offer.Id}");
     }
 }
