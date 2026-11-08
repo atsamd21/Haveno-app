@@ -88,8 +88,8 @@
 
         if (!UseFixedPrice)
         {
-            <label>Deactive offer if @(Direction == "BUY" ? "above" : "below")</label>
-            <input type="number" @bind="TriggerAmount" />
+            <label>Deactivate if market price is @(Direction == "BUY" ? "above" : "below")</label>
+            <input type="number" @bind="TriggerPrice" />
         }
 
         <label>Amount in @(SelectedCurrencyCode) to @(Direction == "BUY" ? "spend" : "receive")</label>
