@@ -115,6 +115,7 @@ public partial class Trade : ComponentBase, IDisposable
             case "PAYOUT_PUBLISHED":
             case "PAYOUT_CONFIRMED":
             case "PAYOUT_UNLOCKED":
+            case "PAYOUT_FINALIZED":
                 SellerState = 4;
                 BuyerState = 4;
                 return;
@@ -238,7 +239,7 @@ public partial class Trade : ComponentBase, IDisposable
     public async Task OpenDisputeAsync(string tradeId)
     {
         await DisputeService.OpenDisputeAsync(tradeId);
-        NavigationManager.NavigateTo("trades?title=Trades&SelectedTabIndex=2");
+        NavigationManager.NavigateTo("trades?title=Trades&SelectedTabIndex=3");
     }
 
     public void GoToDispute()
