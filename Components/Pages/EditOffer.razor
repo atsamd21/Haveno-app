@@ -1,5 +1,71 @@
 ﻿@page "/editoffer"
 
 <div class="editoffer-main">
+    @if (OfferInfo is not null)
+    {
+        <label>Amount of XMR to @OfferInfo.Direction.ToLower()</label>
+        <input type="text"
+               readonly
+               value="@(OfferInfo.MinAmount == OfferInfo.Amount ? $"{OfferInfo.Amount.ToMonero()} XMR" : $"{OfferInfo.MinAmount.ToMonero()} - {OfferInfo.Amount.ToMonero()} XMR")" />
 
+        <label>Price in @(OfferInfo.CounterCurrencyCode) for 1 XMR</label>
+        <input readonly="@(OfferInfo.UseMarketBasedPrice)"
+               type="number"
+               step="@(OfferInfo.IsFiat() ? "0.0001" : "0.00000001")"
+               @bind="Price" />
+
+        <label>@(OfferInfo.Direction == "BUY" ? "Below" : "Above") % from market price</label>
+        <input readonly="@(!OfferInfo.UseMarketBasedPrice)" type="number" @bind="MarketPriceMarginPct" />
+
+        @if (OfferInfo.UseMarketBasedPrice)
+        {
+            <label>Deactivate if market price is @(OfferInfo.Direction == "BUY" ? "above" : "below")</label>
+            <input type="number"
+                   step="@(OfferInfo.IsFiat() ? "0.0001" : "0.00000001")"
+                   @bind="TriggerPrice"
+                   placeholder="Set optional trigger price" />
+        }
+
+        <label>Amount in @(OfferInfo.CounterCurrencyCode) to @(OfferInfo.Direction == "BUY" ? "spend" : "receive")</label>
+        <input type="number"
+               readonly
+               step="@(OfferInfo.IsFiat() ? "0.0001" : "0.00000001")"
+               @bind="TotalCounterCurrency" />
+
+        <div class="buttons">
+            <button class="button-green" @onclick="() => IsConfirmModalOpen = true">Review offer edit</button>
+            <button class="button-grey" @onclick="OnCloseCreateOffer">Cancel</button>
+        </div>
+    }
 </div>
+
+<Modal 
+    Title="Review offer edit" 
+    ModalButtonOptions="ModalButtonOptions.OK_CANCEL" 
+    @bind-IsOpen="IsConfirmModalOpen"
+    OnOkPressed="EditOfferAsync"
+    OkButtonText="Confirm edit">
+    @if (OfferInfo is not null)
+    {
+        <div class="review-offer">
+            <p class="regular-p-grey">Offer direction: @(OfferInfo.Direction.ToLower())ing XMR</p>
+            <p class="regular-p-grey">Min: @OfferInfo.MinAmount.ToMonero().ToString("0.0000") XMR</p>
+            <p class="regular-p-grey">Max: @OfferInfo.Amount.ToMonero().ToString("0.0000") XMR</p>
+
+            @if (OfferInfo.Direction == "BUY")
+            {
+                <p class="regular-p-grey">Amount to spend: @TotalCounterCurrency.ToString("0.00") @OfferInfo.CounterCurrencyCode</p>
+            }
+            else
+            {
+                <p class="regular-p-grey">Amount to receive: @TotalCounterCurrency.ToString("0.00") @OfferInfo.CounterCurrencyCode</p>
+            }
+
+            <p class="regular-p-grey">Price: @Price (distance from market price: @MarketPriceMarginPct%)</p>
+            <p class="regular-p-grey">My trading account: @PaymentAccount?.AccountName</p>
+        </div>        
+    }
+</Modal>
+<Modal Title="Posting offer" IsCloseable="false" ModalButtonOptions="ModalButtonOptions.NONE" @bind-IsOpen="IsPostingOffer">
+    <p class="regular-p-grey">Please wait</p>
+</Modal>

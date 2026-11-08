@@ -1,3 +1,29 @@
 ﻿.editoffer-main {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 78px;
 
+    .buttons {
+        margin-top: 20px;
+
+        button {
+            margin-bottom: 10px;
+        }
+    }
+
+    .margin {
+        margin-bottom: 10px;
+    }
+
+    .no-margin {
+        margin-bottom: 0 !important;
+    }
+
+    .dropdown {
+        margin-bottom: 10px;
+    }
+
+    input {
+        margin-bottom: 10px;
+    }
 }
