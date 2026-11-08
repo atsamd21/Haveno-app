@@ -54,12 +54,6 @@ public partial class Trades : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        if (!NotificationSingleton.InitializedTCS.Task.IsCompleted)
-        {
-            // Timeout needed
-            await NotificationSingleton.InitializedTCS.Task;
-        }
-
         OpenTradeInfos = await TradeService.GetTradesAsync(Category.Open);
         ClosedTradeInfos = await TradeService.GetTradesAsync(Category.Closed);
         FailedTradeInfos = await TradeService.GetTradesAsync(Category.Failed);
