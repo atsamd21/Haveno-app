@@ -25,7 +25,7 @@ public static class RootfsInstaller
 {
     private static readonly string _ubuntuDownloadUrl;
 
-    public static string LatestRootfsVersionString { get; } = "1.0.9";
+    public static string LatestRootfsVersionString { get; } = "1.0.10";
     public static Version LatestRootfsVersion { get { return Version.Parse(LatestRootfsVersionString); } }
 
     static RootfsInstaller()
