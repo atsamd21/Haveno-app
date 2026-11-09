@@ -54,11 +54,15 @@ public partial class Trades : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        OpenTradeInfos = await TradeService.GetTradesAsync(Category.Open);
-        ClosedTradeInfos = await TradeService.GetTradesAsync(Category.Closed);
-        FailedTradeInfos = await TradeService.GetTradesAsync(Category.Failed);
+        var openTradeInfosTask = TradeService.GetTradesAsync(Category.Open);
+        var closedTradeInfosTask = TradeService.GetTradesAsync(Category.Closed);
+        var failedTradeInfosTask = TradeService.GetTradesAsync(Category.Failed);
+        var disputesTask = DisputeService.GetDisputesAsync();
 
-        Disputes = await DisputeService.GetDisputesAsync();
+        OpenTradeInfos = await openTradeInfosTask;
+        ClosedTradeInfos = await closedTradeInfosTask;
+        FailedTradeInfos = await failedTradeInfosTask;
+        Disputes = await disputesTask;
 
         NotificationSingleton.OnChatMessage += HandleChatMessage;
         NotificationSingleton.OnTradeUpdate += HandleTradeUpdate;
