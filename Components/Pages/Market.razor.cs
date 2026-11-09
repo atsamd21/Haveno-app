@@ -53,7 +53,6 @@ public partial class Market : ComponentBase, IDisposable
 
     public List<int> Years { get; set; } = [];
 
-    public bool IsFetching { get; set; }
     public string Version { get; set; } = string.Empty;
     public WalletInfo? WalletInfo { get; set; }
     public List<TradeStatistic> FilteredTradeStatistics { get { return FilterTradeStatistics(); } }
@@ -112,29 +111,34 @@ public partial class Market : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        IsFetching = true;
-        StateHasChanged();
-
-        await BalanceSingleton.InitializedTCS.Task;
-
         PreferredCurrency = AppPreferences.Get<Currency>(AppPreferences.PreferredCurrency).ToString();
         ShowNotice = !AppPreferences.Get<bool>(AppPreferences.InitialNoticeAcknowledged);
 
-        try
+        if (BalanceSingleton.MarketPriceInfoDictionary.Count != 0)
         {
-            CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
-        }
-        catch (KeyNotFoundException)
-        {
-            CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[CurrencyCultureInfo.FallbackCurrency].ToString("0.00");
-            PreferredCurrency = CurrencyCultureInfo.FallbackCurrency;
+            try
+            {
+                CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
+            }
+            catch (KeyNotFoundException)
+            {
+                PreferredCurrency = CurrencyCultureInfo.FallbackCurrency;
+
+                try
+                {
+                    CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
+                }
+                catch
+                {
+
+                }
+            }
         }
 
         TradeStatistics = TradeStatisticsSingleton.TradeStatistics;
         ProcessTradeStatistics();
 
         WalletInfo = BalanceSingleton.WalletInfo;
-        IsFetching = false;
 
         BalanceSingleton.OnBalanceFetch += HandleBalanceFetch;
         TradeStatisticsSingleton.OnTradeStatisticsFetch += HandleTradeStatisticsFetch;
@@ -151,6 +155,28 @@ public partial class Market : ComponentBase, IDisposable
     {
         await InvokeAsync(() => {
             WalletInfo = BalanceSingleton.WalletInfo;
+
+            if (BalanceSingleton.MarketPriceInfoDictionary.Count != 0)
+            {
+                try
+                {
+                    CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
+                }
+                catch (KeyNotFoundException)
+                {
+                    PreferredCurrency = CurrencyCultureInfo.FallbackCurrency;
+
+                    try
+                    {
+                        CurrentMarketPrice = BalanceSingleton.MarketPriceInfoDictionary[PreferredCurrency].ToString("0.00");
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+
             StateHasChanged();
         });
     }

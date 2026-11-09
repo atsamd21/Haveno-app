@@ -108,9 +108,6 @@ public class BalanceSingleton
                 }
 
                 Console.WriteLine("Finished fetching prices");
-
-                if (!InitializedTCS.Task.IsCompleted)
-                    InitializedTCS.SetResult(true);
             }
             catch (Exception)
             {
