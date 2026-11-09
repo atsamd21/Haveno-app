@@ -54,11 +54,11 @@
 
             @if (OfferInfo.Direction == "BUY")
             {
-                <p class="regular-p-grey">Amount to spend: @TotalCounterCurrency.ToString("0.00") @OfferInfo.CounterCurrencyCode</p>
+                <p class="regular-p-grey">Amount to spend: @TotalCounterCurrency.ToString(OfferInfo.IsFiat() ? "0.00" : "0.00000000") @OfferInfo.CounterCurrencyCode</p>
             }
             else
             {
-                <p class="regular-p-grey">Amount to receive: @TotalCounterCurrency.ToString("0.00") @OfferInfo.CounterCurrencyCode</p>
+                <p class="regular-p-grey">Amount to receive: @TotalCounterCurrency.ToString(OfferInfo.IsFiat() ? "0.00" : "0.00000000") @OfferInfo.CounterCurrencyCode</p>
             }
 
             <p class="regular-p-grey">Price: @Price (distance from market price: @MarketPriceMarginPct%)</p>

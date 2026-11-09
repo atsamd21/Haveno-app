@@ -46,20 +46,31 @@ public partial class EditOffer : ComponentBase
 
             TotalCounterCurrency = Math.Round(
                 OfferInfo.Amount.ToMonero() * value,
+                 OfferInfo.IsFiat() ? 0 : 8,
                 MidpointRounding.AwayFromZero) + 0.0000m;
 
-            _price = Math.Round(
-                TotalCounterCurrency / OfferInfo.Amount.ToMonero(),
-                DecimalPlaces, 
-                MidpointRounding.AwayFromZero) + 0.0000m;
-
-            if (OfferInfo.Direction == "BUY")
+            if (BalanceSingleton.MarketPriceInfoDictionary.TryGetValue(OfferInfo.CounterCurrencyCode, out var price))
             {
-                _marketPriceMarginPct = Math.Round((1m - (_price / BalanceSingleton.MarketPriceInfoDictionary[OfferInfo.CounterCurrencyCode])) * 100m, 2, MidpointRounding.AwayFromZero);
+                _price = Math.Round(
+                    TotalCounterCurrency / OfferInfo.Amount.ToMonero(),
+                    DecimalPlaces, 
+                    MidpointRounding.AwayFromZero) + 0.0000m;
+
+                if (OfferInfo.Direction == "BUY")
+                {
+                    _marketPriceMarginPct = Math.Round((1m - (_price / price)) * 100m, 2, MidpointRounding.AwayFromZero);
+                }
+                else
+                {
+                    _marketPriceMarginPct = Math.Round(((_price / price) - 1m) * 100m, 2, MidpointRounding.AwayFromZero);
+                }
             }
             else
             {
-                _marketPriceMarginPct = Math.Round(((_price / BalanceSingleton.MarketPriceInfoDictionary[OfferInfo.CounterCurrencyCode]) - 1m) * 100m, 2, MidpointRounding.AwayFromZero);
+                _price = Math.Round(
+                    value, 
+                    DecimalPlaces,
+                    MidpointRounding.AwayFromZero) + 0.0000m;
             }
         }
     }
@@ -92,6 +103,7 @@ public partial class EditOffer : ComponentBase
 
             TotalCounterCurrency = Math.Round(
                 _price * OfferInfo.Amount.ToMonero(),
+                OfferInfo.IsFiat() ? 0 : 8,
                 MidpointRounding.AwayFromZero);
         }
     }
@@ -126,19 +138,25 @@ public partial class EditOffer : ComponentBase
                 MidpointRounding.AwayFromZero);
         }
 
+        if (BalanceSingleton.MarketPriceInfoDictionary.Count == 0)
+        {
+            NavigationManager.NavigateTo("buysell/myoffers?title=My%20Offers");
+            return;
+        }
+
         if (OfferInfo.UseMarketBasedPrice)
         {
             MarketPrice = BalanceSingleton.MarketPriceInfoDictionary[OfferInfo.CounterCurrencyCode];
         }
-        else
+        else if (BalanceSingleton.MarketPriceInfoDictionary.TryGetValue(OfferInfo.CounterCurrencyCode, out var price))
         {
             if (OfferInfo.Direction == "BUY")
             {
-                _marketPriceMarginPct = Math.Round((1m - (_price / BalanceSingleton.MarketPriceInfoDictionary[OfferInfo.CounterCurrencyCode])) * 100m, 2, MidpointRounding.AwayFromZero);
+                _marketPriceMarginPct = Math.Round((1m - (_price / price)) * 100m, 2, MidpointRounding.AwayFromZero);
             }
             else
             {
-                _marketPriceMarginPct = Math.Round(((_price / BalanceSingleton.MarketPriceInfoDictionary[OfferInfo.CounterCurrencyCode]) - 1m) * 100m, 2, MidpointRounding.AwayFromZero);
+                _marketPriceMarginPct = Math.Round(((_price / price) - 1m) * 100m, 2, MidpointRounding.AwayFromZero);
             }
         }
 
